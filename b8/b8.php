@@ -94,35 +94,34 @@ class b8
         }
 
         # Setup the degenerator class
-
         $class = $this->_loadClass('degenerator', $this->config['degenerator']);
-
-        if ($class === false)
-            throw new Exception("b8: Could not load class definition file for degenerator \"{$this->config['degenerator']}\"");
-
+        if ($class === false) {
+            throw new Exception(
+                "b8: Could not load class definition file for degenerator \"{$this->config['degenerator']}\""
+            );
+        }
         $this->degenerator = new $class($config_degenerator);
 
         # Setup the lexer class
-
         $class = $this->_loadClass('lexer', $this->config['lexer']);
-
-        if ($class === false)
-            throw new Exception("b8: Could not load class definition file for lexer \"{$this->config['lexer']}\"");
-
+        if ($class === false) {
+            throw new Exception(
+                "b8: Could not load class definition file for lexer \"{$this->config['lexer']}\""
+            );
+        }
         $this->lexer = new $class($config_lexer);
 
         # Setup the storage backend
-
         $class = $this->_loadClass('storage', 'base');
-
-        if ($class === false)
+        if ($class === false) {
             throw new Exception("b8: Could not load class definition file for the storage base class");
-
+        }
         $class = $this->_loadClass('storage', $this->config['storage']);
-
-        if ($class === false)
-            throw new Exception("b8: Could not load class definition file for storage backend \"{$this->config['storage']}\"");
-
+        if ($class === false) {
+            throw new Exception(
+                "b8: Could not load class definition file for storage backend \"{$this->config['storage']}\""
+            );
+        }
         $this->storage = new $class($config_storage, $this->degenerator);
     }
 

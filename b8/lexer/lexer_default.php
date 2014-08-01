@@ -68,19 +68,19 @@ class b8_lexer_default
         # Validate config data
         foreach ($config as $name=>$value) {
             switch ($name) {
-            case 'min_size':
-            case 'max_size':
-                $this->config[$name] = (int) $value;
-                break;
-            case 'allow_numbers':
-            case 'get_uris':
-            case 'old_get_html':
-            case 'get_html':
-            case 'get_bbcode':
-                $this->config[$name] = (bool) $value;
-                break;
-            default:
-                throw new Exception("b8_lexer_default: Unknown configuration key: \"$name\"");
+                case 'min_size':
+                case 'max_size':
+                    $this->config[$name] = (int) $value;
+                    break;
+                case 'allow_numbers':
+                case 'get_uris':
+                case 'old_get_html':
+                case 'get_html':
+                case 'get_bbcode':
+                    $this->config[$name] = (bool) $value;
+                    break;
+                default:
+                    throw new Exception("b8_lexer_default: Unknown configuration key: \"$name\"");
             }
         }
     }

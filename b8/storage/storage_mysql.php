@@ -61,18 +61,18 @@ class b8_storage_mysql extends b8_storage_base
         # Validate the config items
         foreach ($config as $name => $value) {
             switch ($name) {
-            case 'table_name':
-            case 'host':
-            case 'user':
-            case 'pass':
-            case 'database':
-                $this->config[$name] = (string) $value;
-                break;
-            case 'connection':
-                $this->config['connection'] = $value;
-                break;
-            default:
-                throw new Exception("b8_storage_mysql: Unknown configuration key: \"$name\"");
+                case 'table_name':
+                case 'host':
+                case 'user':
+                case 'pass':
+                case 'database':
+                    $this->config[$name] = (string) $value;
+                    break;
+                case 'connection':
+                    $this->config['connection'] = $value;
+                    break;
+                default:
+                    throw new Exception("b8_storage_mysql: Unknown configuration key: \"$name\"");
             }
         }
 

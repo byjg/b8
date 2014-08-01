@@ -75,21 +75,21 @@ class b8
         # Validate config data
         foreach ($config as $name => $value) {
             switch ($name) {
-            case 'min_dev':
-            case 'rob_s':
-            case 'rob_x':
-                $this->config[$name] = (float) $value;
-                break;
-            case 'use_relevant':
-                $this->config[$name] = (int) $value;
-                break;
-            case 'lexer':
-            case 'degenerator':
-            case 'storage':
-                $this->config[$name] = (string) $value;
-                break;
-            default:
-                throw new Exception("b8: Unknown configuration key: \"$name\"");
+                case 'min_dev':
+                case 'rob_s':
+                case 'rob_x':
+                    $this->config[$name] = (float) $value;
+                    break;
+                case 'use_relevant':
+                    $this->config[$name] = (int) $value;
+                    break;
+                case 'lexer':
+                case 'degenerator':
+                case 'storage':
+                    $this->config[$name] = (string) $value;
+                    break;
+                default:
+                    throw new Exception("b8: Unknown configuration key: \"$name\"");
             }
         }
 

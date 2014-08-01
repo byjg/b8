@@ -47,14 +47,14 @@ class b8_degenerator_default
         # Validate config data
         foreach ($config as $name => $value) {
             switch($name) {
-            case 'multibyte':
-                $this->config[$name] = (bool) $value;
-                break;
-            case 'encoding':
-                $this->config[$name] = (string) $value;
-                break;
-            default:
-                throw new Exception("b8_degenerator_default: Unknown configuration key: \"$name\"");
+                case 'multibyte':
+                    $this->config[$name] = (bool) $value;
+                    break;
+                case 'encoding':
+                    $this->config[$name] = (string) $value;
+                    break;
+                default:
+                    throw new Exception("b8_degenerator_default: Unknown configuration key: \"$name\"");
             }
         }
     }

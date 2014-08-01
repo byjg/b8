@@ -51,12 +51,12 @@ class b8_storage_dba extends b8_storage_base
         # Validate the config items
         foreach ($config as $name => $value) {
             switch ($name) {
-            case 'database':
-            case 'handler':
-                $this->config[$name] = (string) $value;
-                break;
-            default:
-                throw new Exception("b8_storage_dba: Unknown configuration key: \"$name\"");
+                case 'database':
+                case 'handler':
+                    $this->config[$name] = (string) $value;
+                    break;
+                default:
+                    throw new Exception("b8_storage_dba: Unknown configuration key: \"$name\"");
             }
         }
 

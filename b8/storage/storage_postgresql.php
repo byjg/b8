@@ -40,12 +40,12 @@ class b8_storage_postgresql extends b8_storage_base
         'table_name' => 'b8_wordlist',
         'host'       => 'localhost',
         'port'       => '5432',
-        'user'       => FALSE,
-        'pass'       => FALSE,
-        'connection' => NULL
+        'user'       => false,
+        'pass'       => false,
+        'connection' => null
     );
 
-    private $_connection = NULL;
+    private $_connection = null;
 
     private $_deletes = array();
     private $_puts    = array();
@@ -81,7 +81,7 @@ class b8_storage_postgresql extends b8_storage_base
             }
         }
 
-        if ($this->config['connection'] !== NULL) {
+        if ($this->config['connection'] !== null) {
             # A connection has been given, so check it
             if (! $this->config['connection'] instanceof PDO_PGSQL)
                 throw new Exception('b8_storage_postgresql: The object passed via the "connection" paramter is no PDO_PGSQL instance.');
@@ -130,7 +130,7 @@ class b8_storage_postgresql extends b8_storage_base
         # Commit any changes before closing
         $this->_commit();
         # Just close the connection if no link-resource was passed and b8 created it's own connection
-        if ($this->config['connection'] === NULL)
+        if ($this->config['connection'] === null)
             unset($this->_connection);
     }
 
@@ -167,7 +167,7 @@ class b8_storage_postgresql extends b8_storage_base
         ;
 
         $sth = $this->_connection->prepare($sql);
-        if ($sth->execute($tokens) === FALSE)
+        if ($sth->execute($tokens) === false)
             return array();
 
         $data = array();

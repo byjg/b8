@@ -36,12 +36,12 @@ class b8_storage_mysql extends b8_storage_base
         'database'   => 'b8_wordlist',
         'table_name' => 'b8_wordlist',
         'host'       => 'localhost',
-        'user'       => FALSE,
-        'pass'       => FALSE,
-        'connection' => NULL
+        'user'       => false,
+        'pass'       => false,
+        'connection' => null
     );
 
-    private $_connection = NULL;
+    private $_connection = null;
 
     private $_deletes = array();
     private $_puts    = array();
@@ -77,9 +77,9 @@ class b8_storage_mysql extends b8_storage_base
         }
 
         # Connect to the database
-        if ($this->config['connection'] !== NULL) {
+        if ($this->config['connection'] !== null) {
             # A resource has been passed, so check if it's okay.
-            if (is_resource($this->config['connection']) === TRUE) {
+            if (is_resource($this->config['connection']) === true) {
                 $resource_type = get_resource_type($this->config['connection']);
                 if ($resource_type != 'mysql link' and $resource_type != 'mysql link persistent')
                     throw new Exception("b8_storage_mysql: The resource passed via the \"connection\" paramter is no MySQL resource but \"$resource_type\"");
@@ -91,12 +91,12 @@ class b8_storage_mysql extends b8_storage_base
         } else {
             # We have to connect.
             $this->_connection = mysql_connect($this->config['host'], $this->config['user'], $this->config['pass']);
-            if ($this->_connection === FALSE or mysql_select_db($this->config['database'], $this->_connection) === FALSE)
+            if ($this->_connection === false or mysql_select_db($this->config['database'], $this->_connection) === false)
                 throw new Exception('b8_storage_mysql: ' . mysql_error());
         }
 
         # Check to see if the wordlist table exists
-        if(mysql_query('DESCRIBE `' . $this->config['table_name'] . '`', $this->_connection) === FALSE)
+        if(mysql_query('DESCRIBE `' . $this->config['table_name'] . '`', $this->_connection) === false)
             throw new Exception('b8_storage_mysql: ' . mysql_error());
 
         # Let's see if this is a b8 database and the version is okay
@@ -116,7 +116,7 @@ class b8_storage_mysql extends b8_storage_base
         $this->_commit();
 
         # Just close the connection if no link-resource was passed and b8 created it's own connection
-        if ($this->config['connection'] === NULL)
+        if ($this->config['connection'] === null)
             mysql_close($this->_connection);
     }
 
@@ -157,7 +157,7 @@ class b8_storage_mysql extends b8_storage_base
         ', $this->_connection);
 
         # Check if anything matched the query
-        if ($result === FALSE)
+        if ($result === false)
             return array();
 
         $data = array();
@@ -241,7 +241,7 @@ class b8_storage_mysql extends b8_storage_base
                 WHERE token IN ('" . implode("', '", $this->_deletes) . "');
             ", $this->_connection);
 
-            if (is_resource($result) === TRUE)
+            if (is_resource($result) === true)
                 mysql_free_result($result);
 
             $this->_deletes = array();
@@ -253,7 +253,7 @@ class b8_storage_mysql extends b8_storage_base
                 VALUES " . implode(', ', $this->_puts) . ';
             ', $this->_connection);
 
-            if (is_resource($result) === TRUE)
+            if (is_resource($result) === true)
                 mysql_free_result($result);
 
             $this->_puts = array();
@@ -268,7 +268,7 @@ class b8_storage_mysql extends b8_storage_base
                     `{$this->config['table_name']}`.count_spam = VALUES(count_spam);
             ", $this->_connection);
 
-            if (is_resource($result) === TRUE)
+            if (is_resource($result) === true)
                 mysql_free_result($result);
 
             $this->_updates = array();

@@ -30,7 +30,7 @@ class b8_degenerator_default
 {
 
     public $config = array(
-        'multibyte' => FALSE,
+        'multibyte' => false,
         'encoding'  => 'UTF-8'
     );
 
@@ -106,16 +106,16 @@ class b8_degenerator_default
     protected function _degenerate_word($word)
     {
         # Check for any stored words so the process doesn't have to repeat
-        if (isset($this->degenerates[$word]) === TRUE)
+        if (isset($this->degenerates[$word]) === true)
             return $this->degenerates[$word];
 
         # Create different versions of upper and lower case
-        if ($this->config['multibyte'] === FALSE) {
+        if ($this->config['multibyte'] === false) {
             # The standard upper/lower versions
             $lower = strtolower($word);
             $upper = strtoupper($word);
             $first = substr($upper, 0, 1) . substr($lower, 1, strlen($word));
-        } elseif ($this->config['multibyte'] === TRUE) {
+        } elseif ($this->config['multibyte'] === true) {
             # The multibyte upper/lower versions
             $lower = mb_strtolower($word, $this->config['encoding']);
             $upper = mb_strtoupper($word, $this->config['encoding']);

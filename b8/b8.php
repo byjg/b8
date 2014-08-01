@@ -42,11 +42,11 @@ class b8
         'rob_x'        => 0.5
     );
 
-    public $storage     = NULL;
-    public $lexer       = NULL;
-    public $degenerator = NULL;
+    public $storage     = null;
+    public $lexer       = null;
+    public $degenerator = null;
 
-    private $_token_data = NULL;
+    private $_token_data = null;
 
     const SPAM    = 'spam';
     const HAM     = 'ham';
@@ -97,7 +97,7 @@ class b8
 
         $class = $this->_load_class('degenerator', $this->config['degenerator']);
 
-        if ($class === FALSE)
+        if ($class === false)
             throw new Exception("b8: Could not load class definition file for degenerator \"{$this->config['degenerator']}\"");
 
         $this->degenerator = new $class($config_degenerator);
@@ -106,7 +106,7 @@ class b8
 
         $class = $this->_load_class('lexer', $this->config['lexer']);
 
-        if ($class === FALSE)
+        if ($class === false)
             throw new Exception("b8: Could not load class definition file for lexer \"{$this->config['lexer']}\"");
 
         $this->lexer = new $class($config_lexer);
@@ -115,12 +115,12 @@ class b8
 
         $class = $this->_load_class('storage', 'base');
 
-        if ($class === FALSE)
+        if ($class === false)
             throw new Exception("b8: Could not load class definition file for the storage base class");
 
         $class = $this->_load_class('storage', $this->config['storage']);
 
-        if ($class === FALSE)
+        if ($class === false)
             throw new Exception("b8: Could not load class definition file for storage backend \"{$this->config['storage']}\"");
 
         $this->storage = new $class($config_storage, $this->degenerator);
@@ -130,23 +130,23 @@ class b8
      * Load a class file if a class has not been defined yet.
      *
      * @access private
-     * @return boolean Returns TRUE if everything is okay, otherwise FALSE.
+     * @return boolean Returns true if everything is okay, otherwise false.
      */
     private function _load_class($class_type, $class_name)
     {
         $complete_class_name = "b8_{$class_type}_{$class_name}";
         $class_file = dirname(__FILE__) . DIRECTORY_SEPARATOR . $class_type . DIRECTORY_SEPARATOR . "{$class_type}_{$class_name}.php";
 
-        if (class_exists($complete_class_name, FALSE) === FALSE) {
+        if (class_exists($complete_class_name, false) === false) {
             # Check if the requested file actually exists
-            if (is_file($class_file) !== TRUE or is_readable($class_file) !== TRUE)
-                return FALSE;
+            if (is_file($class_file) !== true or is_readable($class_file) !== true)
+                return false;
 
             # Include it
             $included = require_once($class_file);
 
-            if ($included === FALSE or class_exists($complete_class_name, FALSE) === FALSE)
-                return FALSE;
+            if ($included === false or class_exists($complete_class_name, false) === false)
+                return false;
         }
 
         return $complete_class_name;
@@ -159,10 +159,10 @@ class b8
      * @param string $text
      * @return mixed float The rating between 0 (ham) and 1 (spam) or an error code
      */
-    public function classify($text = NULL)
+    public function classify($text = null)
     {
         # Let's first see if the user called the function correctly
-        if ($text === NULL)
+        if ($text === null)
             return self::CLASSIFYER_TEXT_MISSING;
 
         # Get the internal database variables, containing the number of ham and
@@ -268,14 +268,14 @@ class b8
     private function _get_probability($word, $texts_ham, $texts_spam)
     {
         # Let's see what we have!
-        if (isset($this->_token_data['tokens'][$word]) === TRUE) {
+        if (isset($this->_token_data['tokens'][$word]) === true) {
             # The token is in the database, so we can use it's data as-is
             # and calculate the spamminess of this token directly
             return $this->_calc_probability($this->_token_data['tokens'][$word], $texts_ham, $texts_spam);
         }
 
         # The token was not found, so do we at least have similar words?
-        if (isset($this->_token_data['degenerates'][$word]) === TRUE) {
+        if (isset($this->_token_data['degenerates'][$word]) === true) {
             # We found similar words, so calculate the spamminess for each one
             # and choose the most important one for the further calculation
 
@@ -354,12 +354,12 @@ class b8
      * @param const $category Either b8::SPAM or b8::HAM
      * @return mixed void or an error code
      */
-    public function learn($text = NULL, $category = NULL)
+    public function learn($text = null, $category = null)
     {
         # Let's first see if the user called the function correctly
-        if ($text === NULL)
+        if ($text === null)
             return self::TRAINER_TEXT_MISSING;
-        if ($category === NULL)
+        if ($category === null)
             return self::TRAINER_CATEGORY_MISSING;
 
         return $this->_process_text($text, $category, self::LEARN);
@@ -373,12 +373,12 @@ class b8
      * @param const $category Either b8::SPAM or b8::HAM
      * @return mixed void or an error code
      */
-    public function unlearn($text = NULL, $category = NULL)
+    public function unlearn($text = null, $category = null)
     {
         # Let's first see if the user called the function correctly
-        if ($text === NULL)
+        if ($text === null)
             return self::TRAINER_TEXT_MISSING;
-        if ($category === NULL)
+        if ($category === null)
             return self::TRAINER_CATEGORY_MISSING;
 
         return $this->_process_text($text, $category, self::UNLEARN);
@@ -396,7 +396,7 @@ class b8
     private function _process_text($text, $category, $action)
     {
         # Look if the request is okay
-        if ($this->_check_category($category) === FALSE)
+        if ($this->_check_category($category) === false)
             return self::TRAINER_CATEGORY_FAIL;
 
         # Get all tokens from $text

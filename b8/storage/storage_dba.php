@@ -35,7 +35,7 @@ class b8_storage_dba extends b8_storage_base
         'handler'  => 'db4'
     );
 
-    private $_db = NULL;
+    private $_db = null;
 
     /**
      * Constructs the backend.
@@ -62,17 +62,17 @@ class b8_storage_dba extends b8_storage_base
 
         # Connect to the database
         $dbfile = dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . $this->config['database'];
-        if (is_file($dbfile) !== TRUE)
+        if (is_file($dbfile) !== true)
             throw new Exception("b8_storage_dba: Database file \"{$this->config['database']}\" not found.");
-        if (is_readable($dbfile) !== TRUE)
+        if (is_readable($dbfile) !== true)
             throw new Exception("b8_storage_dba: Database file \"{$this->config['database']}\" is not readable.");
-        if (is_writeable($dbfile) !== TRUE)
+        if (is_writeable($dbfile) !== true)
             throw new Exception("b8_storage_dba: Database file \"{$this->config['database']}\" is not writeable.");
         $this->_db = dba_open($dbfile, 'w', $this->config['handler']);
 
-        if ($this->_db === FALSE) {
-            $this->connected = FALSE;
-            $this->_db = NULL;
+        if ($this->_db === false) {
+            $this->connected = false;
+            $this->_db = null;
             throw new Exception("b8_storage_dba: Could not connect to database file \"{$this->config['database']}\".");
         }
 
@@ -106,14 +106,14 @@ class b8_storage_dba extends b8_storage_base
             # Try to the raw data in the format "count_ham count_spam lastseen"
             $count = dba_fetch($token, $this->_db);
 
-            if ($count !== FALSE) {
+            if ($count !== false) {
                 # Split the data by space characters
                 $split_data = explode(' ', $count);
 
                 # As the internal variables just have one single value,
                 # we have to check for this
-                $count_ham  = NULL;
-                $count_spam = NULL;
+                $count_ham  = null;
+                $count_spam = null;
                 if (isset($split_data[0]))
                     $count_ham  = (int) $split_data[0];
                 if (isset($split_data[1]))
@@ -150,7 +150,7 @@ class b8_storage_dba extends b8_storage_base
      * @access protected
      * @param string $token
      * @param string $count
-     * @return bool TRUE on success or FALSE on failure
+     * @return bool true on success or false on failure
      */
     protected function _put($token, $count) {
         return dba_insert($token, $this->_translate_count($count), $this->_db);
@@ -162,7 +162,7 @@ class b8_storage_dba extends b8_storage_base
      * @access protected
      * @param string $token
      * @param string $count
-     * @return bool TRUE on success or FALSE on failure
+     * @return bool true on success or false on failure
      */
     protected function _update($token, $count)
     {
@@ -174,7 +174,7 @@ class b8_storage_dba extends b8_storage_base
      *
      * @access protected
      * @param string $token
-     * @return bool TRUE on success or FALSE on failure
+     * @return bool true on success or false on failure
      */
     protected function _del($token)
     {

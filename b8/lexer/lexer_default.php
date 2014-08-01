@@ -36,15 +36,15 @@ class b8_lexer_default
     public $config = array(
         'min_size'      => 3,
         'max_size'      => 30,
-        'allow_numbers' => FALSE,
-        'get_uris'      => TRUE,
-        'old_get_html'  => TRUE,
-        'get_html'      => FALSE,
-        'get_bbcode'    => FALSE
+        'allow_numbers' => false,
+        'get_uris'      => true,
+        'old_get_html'  => true,
+        'get_html'      => false,
+        'get_bbcode'    => false
     );
 
-    private $_tokens         = NULL;
-    private $_processed_text = NULL;
+    private $_tokens         = null;
+    private $_processed_text = null;
 
     # The regular expressions we use to split the text to tokens
     public $regexp = array(
@@ -95,11 +95,11 @@ class b8_lexer_default
     public function get_tokens($text)
     {
         # Check if we actually have a string ...
-        if (is_string($text) === FALSE)
+        if (is_string($text) === false)
             return self::LEXER_TEXT_NOT_STRING;
 
         # ... and if it's empty
-        if (empty($text) === TRUE)
+        if (empty($text) === true)
             return self::LEXER_TEXT_EMPTY;
 
         # Re-convert the text to the original characters coded in UTF-8, as
@@ -109,22 +109,22 @@ class b8_lexer_default
         # Reset the token list
         $this->_tokens = array();
 
-        if ($this->config['get_uris'] === TRUE) {
+        if ($this->config['get_uris'] === true) {
             # Get URIs
             $this->_get_uris($this->_processed_text);
         }
 
-        if ($this->config['old_get_html'] === TRUE) {
+        if ($this->config['old_get_html'] === true) {
             # Get HTML - the old way without removing the found tags
             $this->_old_get_html($this->_processed_text);
         }
 
-        if ($this->config['get_html'] === TRUE) {
+        if ($this->config['get_html'] === true) {
             # Get HTML
             $this->_get_markup($this->_processed_text, $this->regexp['html']);
         }
 
-        if ($this->config['get_bbcode'] === TRUE) {
+        if ($this->config['get_bbcode'] === true) {
             # Get BBCode
             $this->_get_markup($this->_processed_text, $this->regexp['bbcode']);
         }
@@ -145,27 +145,27 @@ class b8_lexer_default
      *
      * @access private
      * @param string $token The token string.
-     * @return boolean Returns TRUE if the token is valid, otherwise returns FALSE.
+     * @return boolean Returns true if the token is valid, otherwise returns false.
      */
     private function _is_valid($token)
     {
         # Just to be sure that the token's name won't collide with b8's internal variables
         if(substr($token, 0, 3) == 'b8*')
-            return FALSE;
+            return false;
 
         # Validate the size of the token
         $len = strlen($token);
         if ($len < $this->config['min_size'] or $len > $this->config['max_size'])
-            return FALSE;
+            return false;
 
         # We may want to exclude pure numbers
-        if ($this->config['allow_numbers'] === FALSE) {
+        if ($this->config['allow_numbers'] === false) {
             if (preg_match($this->regexp['numbers'], $token) > 0)
-                return FALSE;
+                return false;
         }
 
         # Token is okay
-        return TRUE;
+        return true;
     }
 
     /**
@@ -173,24 +173,24 @@ class b8_lexer_default
      *
      * @access private
      * @param string $token
-     * @param bool $remove When set to TRUE, the string given in $word_to_remove is removed from the text passed to the lexer.
+     * @param bool $remove When set to true, the string given in $word_to_remove is removed from the text passed to the lexer.
      * @param string $word_to_remove
      * @return void
      */
     private function _add_token($token, $remove, $word_to_remove)
     {
         # Check the validity of the token
-        if ($this->_is_valid($token) === FALSE)
+        if ($this->_is_valid($token) === false)
             return;
 
         # Add it to the list or increase it's counter
-        if (isset($this->_tokens[$token]) === FALSE)
+        if (isset($this->_tokens[$token]) === false)
             $this->_tokens[$token] = 1;
         else
             $this->_tokens[$token] += 1;
 
         # If requested, remove the word or it's original version from the text
-        if ($remove === TRUE)
+        if ($remove === true)
             $this->_processed_text = str_replace($word_to_remove, '', $this->_processed_text);
     }
 
@@ -209,7 +209,7 @@ class b8_lexer_default
             # Remove a possible trailing dot
             $word = rtrim($word, '.');
             # Try to add the found tokens to the list
-            $this->_add_token($word, TRUE, $word);
+            $this->_add_token($word, true, $word);
             # Also process the parts of the found URIs
             $this->_raw_split($word);
         }
@@ -231,14 +231,14 @@ class b8_lexer_default
             $actual_word = $word;
 
             # If the tag has parameters, just use the tag itself
-            if (strpos($word, ' ') !== FALSE) {
+            if (strpos($word, ' ') !== false) {
                 preg_match($this->regexp['tagname'], $word, $match);
                 $actual_word = $match[1];
                 $word = "$actual_word..." . substr($word, -1);
             }
 
             # Try to add the found tokens to the list
-            $this->_add_token($word, TRUE, $actual_word);
+            $this->_add_token($word, true, $actual_word);
         }
     }
 
@@ -255,13 +255,13 @@ class b8_lexer_default
         preg_match_all($this->regexp['html'], $text, $raw_tokens);
         foreach ($raw_tokens[1] as $word) {
             # If the tag has parameters, just use the tag itself
-            if (strpos($word, ' ') !== FALSE) {
+            if (strpos($word, ' ') !== false) {
                 preg_match($this->regexp['tagname'], $word, $match);
                 $word = "{$match[1]}...>";
             }
 
             # Try to add the found tokens to the list
-            $this->_add_token($word, FALSE, NULL);
+            $this->_add_token($word, false, null);
         }
     }
 
@@ -276,7 +276,7 @@ class b8_lexer_default
     {
         foreach (preg_split($this->regexp['raw_split'], $text) as $word) {
             # Check the word and add it to the token list if it's valid
-            $this->_add_token($word, FALSE, NULL);
+            $this->_add_token($word, false, null);
         }
     }
 

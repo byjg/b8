@@ -85,27 +85,27 @@ The database format has changed. There's an update script for DBA and MySQL data
 The ``validate()`` functions have been removed in favor of throwing exceptions when something goes wrong instantiating b8. So if you set up b8 like this
 
 ::
-	
-	$b8 = new b8($config_b8, $config_storage);
 
-	$started_up = $b8->validate();
-	
-	if($started_up !== TRUE) {
-		echo "Error: ", $started_up;
-		do_something();
-	}
+    $b8 = new b8($config_b8, $config_storage);
+
+    $started_up = $b8->validate();
+
+    if($started_up !== true) {
+        echo "Error: ", $started_up;
+        do_something();
+    }
 
 you will have to change your code to something like this:
 
 ::
 
-	try {
-		$b8 = new b8($config_b8, $config_storage, $config_lexer, $config_degenerator);
-	}
-	catch(Exception $e) {
-		echo "Error: ", $e->getMessage();
-		do_something();
-	}
+    try {
+        $b8 = new b8($config_b8, $config_storage, $config_lexer, $config_degenerator);
+    }
+    catch(Exception $e) {
+        echo "Error: ", $e->getMessage();
+        do_something();
+    }
 
 When an error occurs while instantiating b8, the object will simply not be created.
 
@@ -131,53 +131,53 @@ All these values can be set in the "config_b8" array (the first parameter) passe
 
 These are some basic settings telling b8 which backend classes to use:
 
-	**storage**
-		This defines which storage backend will be used to save b8's wordlist. Currently, three databases are supported: `Berkeley DB <http://oracle.com/technetwork/products/berkeleydb/downloads/index.html>`_ (``dba``), `MySQL <http://mysql.com/>`_ (``mysql`` and ``mysqli``) and `PostgreSQL <http://postgresql.org/>`_ (``postgresql``). An experimental backend for `SQLite <http://sqlite.org/>`_ resides in SVN trunk but has not reached release quality yet. The default is ``dba`` (string).
+    **storage**
+        This defines which storage backend will be used to save b8's wordlist. Currently, three databases are supported: `Berkeley DB <http://oracle.com/technetwork/products/berkeleydb/downloads/index.html>`_ (``dba``), `MySQL <http://mysql.com/>`_ (``mysql`` and ``mysqli``) and `PostgreSQL <http://postgresql.org/>`_ (``postgresql``). An experimental backend for `SQLite <http://sqlite.org/>`_ resides in SVN trunk but has not reached release quality yet. The default is ``dba`` (string).
 
-		*dba (Berkeley DB)*
-			This has been the original backend for the filter. All content is saved in a single file, you don't need special user rights or a database server. Probably a good choice, as this is very performant and fits exactly to b8's needs. |br|
-			If you don't know whether your server's PHP installation supports Berkeley DB, simply run the script ``install/setup_berkeleydb.php``. If it shows a Berkeley DB handler, you can use this backend.
+        *dba (Berkeley DB)*
+            This has been the original backend for the filter. All content is saved in a single file, you don't need special user rights or a database server. Probably a good choice, as this is very performant and fits exactly to b8's needs. |br|
+            If you don't know whether your server's PHP installation supports Berkeley DB, simply run the script ``install/setup_berkeleydb.php``. If it shows a Berkeley DB handler, you can use this backend.
 
-		*mysql (MySQL)*
-			The MySQL relational database system is used very widely on the web and can also be used for storing b8's wordlist. This backend needs of course a running and accessable MySQL server and database. |br|
-			This is the original MySQL backend using the legacy mysql\_* PHP functions. As long as the mysql\_* functions stay in PHP, this backend will stay in b8. Anyways, PHP encourages users to use the newer mysqli\_* functions. As of b8 0.6.1, there's also a backend using these (see below).
-			
-		*mysqli (MySQL)*
-			MySQL backend that uses the newer mysqli\_* PHP functions instead of the legacy mysql\_* ones to interact with the database.
+        *mysql (MySQL)*
+            The MySQL relational database system is used very widely on the web and can also be used for storing b8's wordlist. This backend needs of course a running and accessable MySQL server and database. |br|
+            This is the original MySQL backend using the legacy mysql\_* PHP functions. As long as the mysql\_* functions stay in PHP, this backend will stay in b8. Anyways, PHP encourages users to use the newer mysqli\_* functions. As of b8 0.6.1, there's also a backend using these (see below).
 
-		*postgresql (PostgreSQL)* 
-			A PostgreSQL schema with one table can also be used for storing b8's wordlist. This backend needs of course a running and accessable PostgreSQL server and database. |br|
-			Communication with the DB server is done via PDO, so you need PHP >= 5.1 compiled with ``--with-pdo-pgsql`` to use this backend.
+        *mysqli (MySQL)*
+            MySQL backend that uses the newer mysqli\_* PHP functions instead of the legacy mysql\_* ones to interact with the database.
 
-		See `Configuration of the storage backend`_ for the settings of the chosen backend.
+        *postgresql (PostgreSQL)*
+            A PostgreSQL schema with one table can also be used for storing b8's wordlist. This backend needs of course a running and accessable PostgreSQL server and database. |br|
+            Communication with the DB server is done via PDO, so you need PHP >= 5.1 compiled with ``--with-pdo-pgsql`` to use this backend.
 
-	**lexer**
-		The lexer class to be used. Defaults to ``default`` (string). |br|
-		At the moment, only one lexer exists, so you probably don't want to change this unless you have written your own lexer.
-	
-	**degenerator**
-		The degenerator class to be used. See `How does it work?`_ and [#betterbayesian]_ if you're interested in what "degeneration" is. Defaults to ``default`` (string). |br|
-		At the moment, only one degenerator exists, so you probably don't want to change this unless you have written your own degenerator.
+        See `Configuration of the storage backend`_ for the settings of the chosen backend.
+
+    **lexer**
+        The lexer class to be used. Defaults to ``default`` (string). |br|
+        At the moment, only one lexer exists, so you probably don't want to change this unless you have written your own lexer.
+
+    **degenerator**
+        The degenerator class to be used. See `How does it work?`_ and [#betterbayesian]_ if you're interested in what "degeneration" is. Defaults to ``default`` (string). |br|
+        At the moment, only one degenerator exists, so you probably don't want to change this unless you have written your own degenerator.
 
 The following settings influence the mathematical internals of b8. If you want to experiment, feel free to play around with them; but be warned: wrong settings of these values will result in poor performance or could even "short-circuit" the filter. Leave these values as they are unless you know what you are doing.
 
 The "Statistical discussion about b8" [#b8statistic]_ shows why the default values are the default ones.
 
-	**use_relevant**
-		This tells b8 how many tokens should be used to calculate the spamminess of a text. The default setting is ``15`` (integer). This seems to be a quite reasonable value. When using too many tokens, the filter will fail on texts filled with useless stuff or with passages from a newspaper, etc. not being very spammish. |br|
-		The tokens counted multiple times (see above) are added in addition to this value. They don't replace other interesting tokens.
+    **use_relevant**
+        This tells b8 how many tokens should be used to calculate the spamminess of a text. The default setting is ``15`` (integer). This seems to be a quite reasonable value. When using too many tokens, the filter will fail on texts filled with useless stuff or with passages from a newspaper, etc. not being very spammish. |br|
+        The tokens counted multiple times (see above) are added in addition to this value. They don't replace other interesting tokens.
 
-	**min_dev**
-		This defines a minimum deviation from 0.5 that a token's rating must have to be considered when calculating the spamminess. Tokens with a rating closer to 0.5 than this value will simply be skipped. |br|
-		If you don't want to use this feature, set this to ``0``. Defaults to ``0.2`` (float). Read [#b8statistic]_ before increasing this.
+    **min_dev**
+        This defines a minimum deviation from 0.5 that a token's rating must have to be considered when calculating the spamminess. Tokens with a rating closer to 0.5 than this value will simply be skipped. |br|
+        If you don't want to use this feature, set this to ``0``. Defaults to ``0.2`` (float). Read [#b8statistic]_ before increasing this.
 
-	**rob_x**
-		This is Gary Robinson's *x* constant (cf. [#spamdetection]_). A completely unknown token will be rated with the value of ``rob_x``. The default ``0.5`` (float) seems to be quite reasonable, as we can't say if a token that also can't be rated by degeneration is good or bad. |br|
-		If you receive much more spam than ham or vice versa, you could change this setting accordingly.
+    **rob_x**
+        This is Gary Robinson's *x* constant (cf. [#spamdetection]_). A completely unknown token will be rated with the value of ``rob_x``. The default ``0.5`` (float) seems to be quite reasonable, as we can't say if a token that also can't be rated by degeneration is good or bad. |br|
+        If you receive much more spam than ham or vice versa, you could change this setting accordingly.
 
-	**rob_s**
-		This is Gary Robinson's *s* constant. This is essentially the probability that the *rob_x* value is correct for a completely unknown token. It will also shift the probability of rarely seen tokens towards this value. The default is ``0.3`` (float) |br|
-		See [#spamdetection]_ for a closer description of the *s* constant and read [#b8statistic]_ for specific information about this constant in b8's algorithms.
+    **rob_s**
+        This is Gary Robinson's *s* constant. This is essentially the probability that the *rob_x* value is correct for a completely unknown token. It will also shift the probability of rarely seen tokens towards this value. The default is ``0.3`` (float) |br|
+        See [#spamdetection]_ for a closer description of the *s* constant and read [#b8statistic]_ for specific information about this constant in b8's algorithms.
 
 Configuration of the storage backend
 ------------------------------------
@@ -187,10 +187,10 @@ All the following values can be set in the "config_storage" array (the second pa
 Settings for the Berkeley DB (DBA) backend
 ``````````````````````````````````````````
 **database**
-	The filename of the database file, relative to the location of ``b8.php``. Defaults to ``wordlist.db`` (string).
+    The filename of the database file, relative to the location of ``b8.php``. Defaults to ``wordlist.db`` (string).
 
 **handler**
-	The DBA handler to use (cf. `the PHP documentation <http://php.net/manual/en/dba.requirements.php>`_ and `Setting up a new Berkeley DB`_). Defaults to ``db4`` (string).
+    The DBA handler to use (cf. `the PHP documentation <http://php.net/manual/en/dba.requirements.php>`_ and `Setting up a new Berkeley DB`_). Defaults to ``db4`` (string).
 
 Settings for the MySQL backend
 ``````````````````````````````
@@ -198,49 +198,49 @@ Settings for the MySQL backend
 This applies both for the legacy ``mysql`` backend and for the newer ``mysqli`` backend.
 
 **database**
-	The database containing b8's wordlist table. Defaults to ``b8_wordlist`` (string).
+    The database containing b8's wordlist table. Defaults to ``b8_wordlist`` (string).
 
 **table_name**
-	The table containing b8's wordlist. Defaults to ``b8_wordlist`` (string).
+    The table containing b8's wordlist. Defaults to ``b8_wordlist`` (string).
 
 **host**
-	The host of the MySQL server. Defaults to ``localhost`` (string).
+    The host of the MySQL server. Defaults to ``localhost`` (string).
 
 **user**
-	The user name used to open the database connection. Defaults to ``FALSE`` (boolean).
+    The user name used to open the database connection. Defaults to ``false`` (boolean).
 
 **pass**
-	The password required to open the database connection. Defaults to ``FALSE`` (boolean).
+    The password required to open the database connection. Defaults to ``false`` (boolean).
 
 **connection**
-	An existing MySQL link-resource (for the ``mysql`` backend) or a mysqli object (for the ``mysqli`` backend) that can be used by b8. If a connection is passed to b8, it will be used to communicate with the database instead of creating a new connection. Defaults to ``NULL`` (NULL).
+    An existing MySQL link-resource (for the ``mysql`` backend) or a mysqli object (for the ``mysqli`` backend) that can be used by b8. If a connection is passed to b8, it will be used to communicate with the database instead of creating a new connection. Defaults to ``null`` (null).
 
 Settings for the PostgreSQL backend
 ```````````````````````````````````
 
 **database**
-	The database containing b8's wordlist table. Defaults to ``b8_wordlist`` (string).
+    The database containing b8's wordlist table. Defaults to ``b8_wordlist`` (string).
 
 **table_name**
-	The table containing b8's wordlist. Defaults to ``b8_wordlist`` (string).
+    The table containing b8's wordlist. Defaults to ``b8_wordlist`` (string).
 
 **host**
-	The host of the PostgreSQL server. Defaults to ``localhost`` (string).
+    The host of the PostgreSQL server. Defaults to ``localhost`` (string).
 
 **port**
-	The port of the PostgreSQL server. Defaults to ``5432`` (integer).
+    The port of the PostgreSQL server. Defaults to ``5432`` (integer).
 
 **schema**
-	The schema in the database to use. Defaults to ``b8`` (string).
+    The schema in the database to use. Defaults to ``b8`` (string).
 
 **user**
-	The user name used to open the database connection. Defaults to ``FALSE`` (boolean).
+    The user name used to open the database connection. Defaults to ``false`` (boolean).
 
 **pass**
-	The password required to open the database connection. Defaults to ``FALSE`` (boolean).
+    The password required to open the database connection. Defaults to ``false`` (boolean).
 
 **connection**
-	An existing PDO instance that can be used by b8. If a connection is passed to b8, it will be used to communicate with the database instead of creating a new connection. Defaults to ``NULL`` (NULL).
+    An existing PDO instance that can be used by b8. If a connection is passed to b8, it will be used to communicate with the database instead of creating a new connection. Defaults to ``null`` (null).
 
 Configuration of the lexer
 --------------------------
@@ -250,25 +250,25 @@ The lexer disassembles the text we want to analyze to single words ("tokens"). T
 All the following values can be set in the "config_lexer" array (the third parameter) passed to b8. The name of the array doesn't matter (of course), it just has to be the third argument.
 
 **min_size**
-	The minimal length for a token to be considered when calculating the rating of a text. Defaults to ``3`` (integer).
+    The minimal length for a token to be considered when calculating the rating of a text. Defaults to ``3`` (integer).
 
 **max_size**
-	The maximal length for a token to be considered when calculating the rating of a text. Defaults to ``30`` (integer).
+    The maximal length for a token to be considered when calculating the rating of a text. Defaults to ``30`` (integer).
 
 **allow_numbers**
-	Should pure numbers also be considered? Defaults to ``FALSE`` (boolean).
+    Should pure numbers also be considered? Defaults to ``false`` (boolean).
 
 **get_uris**
-	Look for URIs. Defaults to ``TRUE`` (boolean).
+    Look for URIs. Defaults to ``true`` (boolean).
 
 **old_get_html**
-	Extracts HTML. This is the old search function used up to b8 0.5.2. If you have an existing b8 installation and want the exactly same behaviour as before, use this. This function will probably removed in a future release. Defaults to ``TRUE`` (boolean).
+    Extracts HTML. This is the old search function used up to b8 0.5.2. If you have an existing b8 installation and want the exactly same behaviour as before, use this. This function will probably removed in a future release. Defaults to ``true`` (boolean).
 
 **get_html**
-	Extracts HTML. This has been added in b8 0.6 and should work better then the "old_get_html" procedure. Defaults to ``FALSE`` (boolean).
+    Extracts HTML. This has been added in b8 0.6 and should work better then the "old_get_html" procedure. Defaults to ``false`` (boolean).
 
 **get_bbcode**
-	Extracts BBCode, which is often used in forums. Defaults to ``FALSE`` (boolean).
+    Extracts BBCode, which is often used in forums. Defaults to ``false`` (boolean).
 
 Configuration of the degenerator
 --------------------------------
@@ -278,10 +278,10 @@ When a token is not found in the database, b8 tries to find similar versions of 
 All the following values can be set in the "config_degenerator" array (the fourth parameter) passed to b8. The name of the array doesn't matter (of course), it just has to be the fourth argument.
 
 **multibyte**
-	Use multibyte operations when searching for degenerated versions of an unknown token. When activating this, b8 needs PHP's ``mbstring`` module to work. Defaults to ``FALSE`` (boolean).
+    Use multibyte operations when searching for degenerated versions of an unknown token. When activating this, b8 needs PHP's ``mbstring`` module to work. Defaults to ``false`` (boolean).
 
 **encoding**
-	The internal encoding to use when doing multibyte operations. This will only be used when ``multibyte`` is set to ``TRUE``. Defaults to ``UTF-8`` (string).
+    The internal encoding to use when doing multibyte operations. This will only be used when ``multibyte`` is set to ``true``. Defaults to ``UTF-8`` (string).
 
 The difference of using or not using multibyte operations will only show up when non-latin-1 text is processed by b8. For example, if we have an unknown token ``HeLlO!``, the degenerator will provide the degenerated versions ``hello!``, ``HELLO!``, ``Hello!``, ``hello``, ``HELLO``, ``Hello`` and ``HeLlO``, no matter if multibyte operations are used or not.
 
@@ -308,8 +308,8 @@ If you prefer to setup a new b8 Berkeley DB manually, just create an empty datab
 
 ::
 
-	"b8*dbversion" => "3"
-	"b8*texts"     => "0 0"
+    "b8*dbversion" => "3"
+    "b8*texts"     => "0 0"
 
 Be sure to set the right DBA handler in the storage backend configuration if it's not ``db4``.
 
@@ -327,35 +327,35 @@ Just have a look at the example script ``example/index.php`` to see how you can 
 
 ::
 
-	# Include b8's code
-	require_once($path_to . 'b8.php');
-	
-	# Do some configuration
-	$config_b8          = array('some_key' => 'some_value', ...);
-	$config_storage     = array('some_key' => 'some_value', ...);
-	$config_lexer       = array('some_key' => 'some_value', ...);
-	$config_degenerator = array('some_key' => 'some_value', ...);
-	
-	# Create a new b8 instance
-	try {
-		$b8 = new b8($config_b8, $config_storage, $config_lexer, $config_degenerator);
-	}
-	catch(Exception $e) {
-		do_something();
-	}
+    # Include b8's code
+    require_once($path_to . 'b8.php');
+
+    # Do some configuration
+    $config_b8          = array('some_key' => 'some_value', ...);
+    $config_storage     = array('some_key' => 'some_value', ...);
+    $config_lexer       = array('some_key' => 'some_value', ...);
+    $config_degenerator = array('some_key' => 'some_value', ...);
+
+    # Create a new b8 instance
+    try {
+        $b8 = new b8($config_b8, $config_storage, $config_lexer, $config_degenerator);
+    }
+    catch(Exception $e) {
+        do_something();
+    }
 
 b8 provides three functions in an object oriented way (called e. g. via ``$b8->classify($text)``):
 
 **classify($text)**
-	This function takes the text ``$text`` (string), calculates it's probability for being spam and returns it in the form of a value between 0 and 1 (float). |br|
-	A value close to 0 says the text is more likely ham and a value close to 1 says the text is more likely spam. What to do with this value is *your* business ;-) See also `Tips on operation`_ below.
+    This function takes the text ``$text`` (string), calculates it's probability for being spam and returns it in the form of a value between 0 and 1 (float). |br|
+    A value close to 0 says the text is more likely ham and a value close to 1 says the text is more likely spam. What to do with this value is *your* business ;-) See also `Tips on operation`_ below.
 
 **learn($text, $category)**
-	This saves the text ``$text`` (string) in the category ``$category`` (b8 constant, either ``b8::HAM`` or ``b8::SPAM``).
+    This saves the text ``$text`` (string) in the category ``$category`` (b8 constant, either ``b8::HAM`` or ``b8::SPAM``).
 
 **unlearn($text, $category)**
-	You don't need this function in normal operation. It just exists to delete a text from a category in which is has been stored accidentally before. It deletes the text ``$text`` (string) from the category ``$category`` (b8 constant, either ``b8::HAM`` or ``b8::SPAM``). |br|
-	**Don't delete a spam text from ham after saving it in spam or vice versa, as long you don't have stored it accidentally in the wrong category before!** This will *not* improve performance, quite the opposite! The filter will always try to remove texts from the ham or spam data, even if they have never been stored there. The counters for tokens which are found will be decreased or the word will be deleted and the non-existing words will simply be ignored. But always, the text counter for the respective category will be decreased by 1 and will eventually reach 0. Consequently, the ham-spam texts proportion will become distorted, deteriorating the performance of b8's algorithms.
+    You don't need this function in normal operation. It just exists to delete a text from a category in which is has been stored accidentally before. It deletes the text ``$text`` (string) from the category ``$category`` (b8 constant, either ``b8::HAM`` or ``b8::SPAM``). |br|
+    **Don't delete a spam text from ham after saving it in spam or vice versa, as long you don't have stored it accidentally in the wrong category before!** This will *not* improve performance, quite the opposite! The filter will always try to remove texts from the ham or spam data, even if they have never been stored there. The counters for tokens which are found will be decreased or the word will be deleted and the non-existing words will simply be ignored. But always, the text counter for the respective category will be decreased by 1 and will eventually reach 0. Consequently, the ham-spam texts proportion will become distorted, deteriorating the performance of b8's algorithms.
 
 Tips on operation
 =================
@@ -440,10 +440,10 @@ The database layout
 The database layout is quite simple. It's essentially just a key-value pair for everything stored. There are two "internal" variables stored as normal tokens. A lexer must not provide a token starting with ``b8*``, otherwise, we will probably get collisions. The internal tokens are:
 
 **b8*dbversion**
-	This indicates the database's version.
+    This indicates the database's version.
 
 **b8*texts**
-	The number of ham and spam texts learned.
+    The number of ham and spam texts learned.
 
 Each "normal" token is stored with it's literal name as the key and it's data as the value. The backends store the token's data in a different way. The DBA backend simply stores a string containing both values separated by a space character. The SQL backends store the counters in different columns.
 

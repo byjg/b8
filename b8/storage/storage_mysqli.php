@@ -24,9 +24,8 @@
  * @license LGPL 2.1
  * @access public
  * @package b8
- * @author Oliver Lillie (original PHP 5 port and optimizations)
  * @author Tobias Leupold
- * @author Lorenzo Masetti (update to mysqli with the help of the  MySQL ext/mysq Converter Tool)
+ * @author Lorenzo Masetti (update to mysqli with the help of the MySQL ext/mysql Converter Tool)
  */
 
 class b8_storage_mysqli extends b8_storage_base
@@ -36,12 +35,12 @@ class b8_storage_mysqli extends b8_storage_base
         'database'   => 'b8_wordlist',
         'table_name' => 'b8_wordlist',
         'host'       => 'localhost',
-        'user'       => FALSE,
-        'pass'       => FALSE,
-        'connection' => NULL
+        'user'       => false,
+        'pass'       => false,
+        'connection' => null
     );
 
-    private $_connection = NULL;
+    private $_connection = null;
 
     private $_deletes = array();
     private $_puts    = array();
@@ -77,9 +76,9 @@ class b8_storage_mysqli extends b8_storage_base
         }
 
         # Connect to the database
-        if ($this->config['connection'] !== NULL) {
+        if ($this->config['connection'] !== null) {
             # A resource has been passed, so check if it's okay.
-            if (is_object($this->config['connection']) === TRUE) {
+            if (is_object($this->config['connection']) === true) {
                 $object_type = get_class($this->config['connection']);
                 if ($object_type != 'mysqli')
                     throw new Exception("b8_storage_mysqli: The object passed via the \"connection\" paramter is no mysqli object but \"$object_type\"");
@@ -96,7 +95,7 @@ class b8_storage_mysqli extends b8_storage_base
         }
 
         # Check to see if the wordlist table exists
-        if(mysqli_query( $this->_connection, 'DESCRIBE `' . $this->config['table_name'] . '`') === FALSE)
+        if(mysqli_query( $this->_connection, 'DESCRIBE `' . $this->config['table_name'] . '`') === false)
             throw new Exception('b8_storage_mysqli: ' . mysqli_error($this->connection));
 
         # Let's see if this is a b8 database and the version is okay
@@ -114,7 +113,7 @@ class b8_storage_mysqli extends b8_storage_base
         # Commit any changes before closing
         $this->_commit();
         # Just close the connection if no link-resource was passed and b8 created it's own connection
-        if ($this->config['connection'] === NULL)
+        if ($this->config['connection'] === null)
             mysqli_close($this->_connection);
     }
 
@@ -154,7 +153,7 @@ class b8_storage_mysqli extends b8_storage_base
         ');
 
         # Check if anything matched the query
-        if ($result === FALSE)
+        if ($result === false)
             return array();
 
         $data = array();
@@ -236,7 +235,7 @@ class b8_storage_mysqli extends b8_storage_base
                 DELETE FROM `{$this->config['table_name']}`
                 WHERE token IN ('" . implode("', '", $this->_deletes) . "');
             ");
-            if (is_object($result) === TRUE)
+            if (is_object($result) === true)
                 mysqli_free_result($result);
             $this->_deletes = array();
         }
@@ -246,7 +245,7 @@ class b8_storage_mysqli extends b8_storage_base
                 INSERT INTO `{$this->config['table_name']}`(token, count_ham, count_spam)
                 VALUES " . implode(', ', $this->_puts) . ';
             ');
-            if (is_object($result) === TRUE)
+            if (is_object($result) === true)
                 mysqli_free_result($result);
             $this->_puts = array();
         }
@@ -259,7 +258,7 @@ class b8_storage_mysqli extends b8_storage_base
                 `{$this->config['table_name']}`.count_ham = VALUES(count_ham),
                 `{$this->config['table_name']}`.count_spam = VALUES(count_spam);
             ");
-            if (is_object($result) === TRUE)
+            if (is_object($result) === true)
                 mysqli_free_result($result);
             $this->_updates = array();
         }

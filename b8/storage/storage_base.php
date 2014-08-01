@@ -30,9 +30,9 @@
 abstract class b8_storage_base
 {
 
-    public $connected = FALSE;
+    public $connected = false;
 
-    protected $degenerator = NULL;
+    protected $degenerator = null;
 
     const INTERNALS_TEXTS     = 'b8*texts';
     const INTERNALS_DBVERSION = 'b8*dbversion';
@@ -72,9 +72,9 @@ abstract class b8_storage_base
         # Just in case this is called by check_database() and
         # it's not yet clear if we actually have a b8 database
 
-        $texts_ham = NULL;
-        $texts_spam = NULL;
-        $dbversion = NULL;
+        $texts_ham = null;
+        $texts_spam = null;
+        $dbversion = null;
 
         if(isset($internals[self::INTERNALS_TEXTS]['count_ham']))
             $texts_ham = (int) $internals[self::INTERNALS_TEXTS]['count_ham'];
@@ -97,7 +97,7 @@ abstract class b8_storage_base
      *
      * @access public
      * @param array $tokens
-     * @return mixed Returns FALSE on failure, otherwise returns array of returned data in the format array('tokens' => array(token => count), 'degenerates' => array(token => array(degenerate => count))).
+     * @return mixed Returns false on failure, otherwise returns array of returned data in the format array('tokens' => array(token => count), 'degenerates' => array(token => array(degenerate => count))).
      */
     public function get($tokens)
     {
@@ -131,14 +131,14 @@ abstract class b8_storage_base
         $return_data_degenerates = array();
 
         foreach ($tokens as $token) {
-            if (isset($token_data[$token]) === TRUE) {
+            if (isset($token_data[$token]) === true) {
                 # The token was found in the database
                 $return_data_tokens[$token] = $token_data[$token];
             } else {
                 # The token was not found, so we look if we
                 # can return data for degenerated tokens
                 foreach ($this->degenerator->degenerates[$token] as $degenerate) {
-                    if (isset($token_data[$degenerate]) === TRUE) {
+                    if (isset($token_data[$degenerate]) === true) {
                         # A degeneration of the token way found in the database
                         $return_data_degenerates[$token][$degenerate] = $token_data[$degenerate];
                     }

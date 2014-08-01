@@ -99,8 +99,7 @@ class b8_storage_postgresql extends b8_storage_base
                     'user=' .     $this->config['user'] .     ';' .
                     'password=' . $this->config['pass'])
                 ;
-            }
-            catch(PDOException $e) {
+            } catch(PDOException $e) {
                 throw new Exception('b8_storage_postgresql: ' . $e->getMessage());
             }
         }

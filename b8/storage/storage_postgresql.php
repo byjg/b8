@@ -99,7 +99,6 @@ class b8_storage_postgresql extends b8_storage_base
                     'user=' .     $this->config['user'] .     ';' .
                     'password=' . $this->config['pass'])
                 ;
-
             }
             catch(PDOException $e) {
                 throw new Exception('b8_storage_postgresql: ' . $e->getMessage());
@@ -112,7 +111,7 @@ class b8_storage_postgresql extends b8_storage_base
             WHERE schemaname = ? AND tablename = ?
         ');
 
-        if (!$sth->execute(array($this->_config['schema'], $this->_config['table_name'])))
+        if (!$sth->execute(array($this->config['schema'], $this->config['table_name'])))
             throw new Exception('b8_storage_postgresql: ' . print_r($sth->errorInfo(), true));
 
         # Let's see if this is a b8 database and the version is okay

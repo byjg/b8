@@ -95,7 +95,7 @@ class b8
 
         # Setup the degenerator class
 
-        $class = $this->_load_class('degenerator', $this->config['degenerator']);
+        $class = $this->_loadClass('degenerator', $this->config['degenerator']);
 
         if ($class === false)
             throw new Exception("b8: Could not load class definition file for degenerator \"{$this->config['degenerator']}\"");
@@ -104,7 +104,7 @@ class b8
 
         # Setup the lexer class
 
-        $class = $this->_load_class('lexer', $this->config['lexer']);
+        $class = $this->_loadClass('lexer', $this->config['lexer']);
 
         if ($class === false)
             throw new Exception("b8: Could not load class definition file for lexer \"{$this->config['lexer']}\"");
@@ -113,12 +113,12 @@ class b8
 
         # Setup the storage backend
 
-        $class = $this->_load_class('storage', 'base');
+        $class = $this->_loadClass('storage', 'base');
 
         if ($class === false)
             throw new Exception("b8: Could not load class definition file for the storage base class");
 
-        $class = $this->_load_class('storage', $this->config['storage']);
+        $class = $this->_loadClass('storage', $this->config['storage']);
 
         if ($class === false)
             throw new Exception("b8: Could not load class definition file for storage backend \"{$this->config['storage']}\"");
@@ -132,7 +132,7 @@ class b8
      * @access private
      * @return boolean Returns true if everything is okay, otherwise false.
      */
-    private function _load_class($class_type, $class_name)
+    private function _loadClass($class_type, $class_name)
     {
         $complete_class_name = "b8_{$class_type}_{$class_name}";
         $class_file = dirname(__FILE__) . DIRECTORY_SEPARATOR . $class_type . DIRECTORY_SEPARATOR . "{$class_type}_{$class_name}.php";
@@ -167,12 +167,12 @@ class b8
 
         # Get the internal database variables, containing the number of ham and
         # spam texts so the spam probability can be calculated in relation to them
-        $internals = $this->storage->get_internals();
+        $internals = $this->storage->getInternals();
 
         # Calculate the spamminess of all tokens
 
         # Get all tokens we want to rate
-        $tokens = $this->lexer->get_tokens($text);
+        $tokens = $this->lexer->getTokens($text);
 
         # Check if the lexer failed
         # (if so, $tokens will be a lexer error code, if not, $tokens will be an array)
@@ -193,7 +193,7 @@ class b8
 
             # Although we only call this function only here ... let's do the
             # calculation stuff in a function to make this a bit less confusing ;-)
-            $rating[$word] = $this->_get_probability($word, $internals['texts_ham'], $internals['texts_spam']);
+            $rating[$word] = $this->_getProbability($word, $internals['texts_ham'], $internals['texts_spam']);
 
             $importance[$word] = abs(0.5 - $rating[$word]);
         }
@@ -265,13 +265,13 @@ class b8
      * @param string $texts_spam
      * @return void
      */
-    private function _get_probability($word, $texts_ham, $texts_spam)
+    private function _getProbability($word, $texts_ham, $texts_spam)
     {
         # Let's see what we have!
         if (isset($this->_token_data['tokens'][$word]) === true) {
             # The token is in the database, so we can use it's data as-is
             # and calculate the spamminess of this token directly
-            return $this->_calc_probability($this->_token_data['tokens'][$word], $texts_ham, $texts_spam);
+            return $this->_calcProbability($this->_token_data['tokens'][$word], $texts_ham, $texts_spam);
         }
 
         # The token was not found, so do we at least have similar words?
@@ -284,7 +284,7 @@ class b8
 
             foreach ($this->_token_data['degenerates'][$word] as $degenerate => $count) {
                 # Calculate the rating of the current degenerated token
-                $rating_tmp = $this->_calc_probability($count, $texts_ham, $texts_spam);
+                $rating_tmp = $this->_calcProbability($count, $texts_ham, $texts_spam);
 
                 # Is it more important than the rating of another degenerated version?
                 if(abs(0.5 - $rating_tmp) > abs(0.5 - $rating))
@@ -309,7 +309,7 @@ class b8
      * @param string $texts_spam
      * @return void
      */
-    private function _calc_probability($data, $texts_ham, $texts_spam)
+    private function _calcProbability($data, $texts_ham, $texts_spam)
     {
         # Calculate the basic probability as proposed by Mr. Graham
 
@@ -341,7 +341,7 @@ class b8
      * @param string $category
      * @return void
      */
-    private function _check_category($category)
+    private function _checkCategory($category)
     {
         return $category === self::HAM or $category === self::SPAM;
     }
@@ -362,7 +362,7 @@ class b8
         if ($category === null)
             return self::TRAINER_CATEGORY_MISSING;
 
-        return $this->_process_text($text, $category, self::LEARN);
+        return $this->_processText($text, $category, self::LEARN);
     }
 
     /**
@@ -381,7 +381,7 @@ class b8
         if ($category === null)
             return self::TRAINER_CATEGORY_MISSING;
 
-        return $this->_process_text($text, $category, self::UNLEARN);
+        return $this->_processText($text, $category, self::UNLEARN);
     }
 
     /**
@@ -393,14 +393,14 @@ class b8
      * @param const $action Either b8::LEARN or b8::UNLEARN
      * @return mixed void or an error code
      */
-    private function _process_text($text, $category, $action)
+    private function _processText($text, $category, $action)
     {
         # Look if the request is okay
-        if ($this->_check_category($category) === false)
+        if ($this->_checkCategory($category) === false)
             return self::TRAINER_CATEGORY_FAIL;
 
         # Get all tokens from $text
-        $tokens = $this->lexer->get_tokens($text);
+        $tokens = $this->lexer->getTokens($text);
 
         # Check if the lexer failed
         # (if so, $tokens will be a lexer error code, if not, $tokens will be an array)
@@ -408,7 +408,7 @@ class b8
             return $tokens;
 
         # Pass the tokens and what to do with it to the storage backend
-        return $this->storage->process_text($tokens, $category, $action);
+        return $this->storage->processText($tokens, $category, $action);
     }
 
 }

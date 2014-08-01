@@ -71,7 +71,7 @@ class b8_degenerator_default
         $degenerates = array();
 
         foreach ($words as $word)
-            $degenerates[$word] = $this->_degenerate_word($word);
+            $degenerates[$word] = $this->_degenerateWord($word);
 
         return $degenerates;
     }
@@ -83,7 +83,7 @@ class b8_degenerator_default
      * @param array $list The list to process
      * @return array The list without duplicates
      */
-    protected function _delete_duplicates($word, $list)
+    protected function _deleteDuplicates($word, $list)
     {
         $list_processed = array();
 
@@ -103,7 +103,7 @@ class b8_degenerator_default
      * @param string $word
      * @return array An array of degenerated words
      */
-    protected function _degenerate_word($word)
+    protected function _degenerateWord($word)
     {
         # Check for any stored words so the process doesn't have to repeat
         if (isset($this->degenerates[$word]) === true)
@@ -129,7 +129,7 @@ class b8_degenerator_default
         array_push($upper_lower, $first);
 
         # Delete duplicate upper/lower versions
-        $degenerate = $this->_delete_duplicates($word, $upper_lower);
+        $degenerate = $this->_deleteDuplicates($word, $upper_lower);
 
         # Append the original word
         array_push($degenerate, $word);
@@ -158,7 +158,7 @@ class b8_degenerator_default
 
         # Some degenerates are the same as the original word. These don't have
         # to be fetched, so we create a new array with only new tokens
-        $degenerate = $this->_delete_duplicates($word, $degenerate);
+        $degenerate = $this->_deleteDuplicates($word, $degenerate);
 
         # Store the list of degenerates for the token to prevent unnecessary re-processing
         $this->degenerates[$word] = $degenerate;

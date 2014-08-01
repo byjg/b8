@@ -43,9 +43,9 @@ abstract class b8_storage_base
      * @access protected
      * @return void throws an exception if something's wrong with the database
      */
-    protected function check_database()
+    protected function checkDatabase()
     {
-        $internals = $this->get_internals();
+        $internals = $this->getInternals();
         if (isset($internals['dbversion'])) {
             if ($internals['dbversion'] == b8::DBVERSION)
                 return;
@@ -60,16 +60,16 @@ abstract class b8_storage_base
      * @access public
      * @return array Returns an array of all internals.
      */
-    public function get_internals()
+    public function getInternals()
     {
-        $internals = $this->_get_query(
+        $internals = $this->_getQuery(
             array(
                 self::INTERNALS_TEXTS,
                 self::INTERNALS_DBVERSION
             )
         );
 
-        # Just in case this is called by check_database() and
+        # Just in case this is called by checkDatabase() and
         # it's not yet clear if we actually have a b8 database
 
         $texts_ham = null;
@@ -102,7 +102,7 @@ abstract class b8_storage_base
     public function get($tokens)
     {
         # First we see what we have in the database.
-        $token_data = $this->_get_query($tokens);
+        $token_data = $this->_getQuery($tokens);
 
         # Check if we have to degenerate some tokens
         $missing_tokens = array();
@@ -122,7 +122,7 @@ abstract class b8_storage_base
             foreach ($degenerates as $token => $token_degenerates)
                 $degenerates_list = array_merge($degenerates_list, $token_degenerates);
 
-            $token_data = array_merge($token_data, $this->_get_query($degenerates_list));
+            $token_data = array_merge($token_data, $this->_getQuery($degenerates_list));
         }
 
         # Here, we have all available data in $token_data.
@@ -163,15 +163,15 @@ abstract class b8_storage_base
      * @param const $action Either b8::LEARN or b8::UNLEARN
      * @return void
      */
-    public function process_text($tokens, $category, $action)
+    public function processText($tokens, $category, $action)
     {
         # No matter what we do, we first have to check what data we have.
 
         # First get the internals, including the ham texts and spam texts counter
-        $internals = $this->get_internals();
+        $internals = $this->getInternals();
 
         # Then, fetch all data for all tokens we have
-        $token_data = $this->_get_query(array_keys($tokens));
+        $token_data = $this->_getQuery(array_keys($tokens));
 
         # Process all tokens to learn/unlearn
         foreach ($tokens as $token => $count) {

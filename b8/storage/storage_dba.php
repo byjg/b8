@@ -77,7 +77,7 @@ class b8_storage_dba extends b8_storage_base
         }
 
         # Let's see if this is a b8 database and the version is okay
-        $this->check_database();
+        $this->checkDatabase();
     }
 
     /**
@@ -98,7 +98,7 @@ class b8_storage_dba extends b8_storage_base
      * @param array $tokens
      * @return mixed Returns an array of the returned data in the format array(token => data) or an empty array if there was no data.
      */
-    protected function _get_query($tokens)
+    protected function _getQuery($tokens)
     {
         $data = array();
 
@@ -137,7 +137,7 @@ class b8_storage_dba extends b8_storage_base
      * @param array ('count_ham' => int, 'count_spam' => int)
      * @return string The translated array
      */
-    private function _translate_count($count) {
+    private function _translateCount($count) {
         # Assemble the count data string
         $count_data = "{$count['count_ham']} {$count['count_spam']}";
         # Remove whitespace from data of the internal variables
@@ -153,7 +153,7 @@ class b8_storage_dba extends b8_storage_base
      * @return bool true on success or false on failure
      */
     protected function _put($token, $count) {
-        return dba_insert($token, $this->_translate_count($count), $this->_db);
+        return dba_insert($token, $this->_translateCount($count), $this->_db);
     }
 
     /**
@@ -166,7 +166,7 @@ class b8_storage_dba extends b8_storage_base
      */
     protected function _update($token, $count)
     {
-        return dba_replace($token, $this->_translate_count($count), $this->_db);
+        return dba_replace($token, $this->_translateCount($count), $this->_db);
     }
 
     /**

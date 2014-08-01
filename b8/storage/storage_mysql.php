@@ -100,7 +100,7 @@ class b8_storage_mysql extends b8_storage_base
             throw new Exception('b8_storage_mysql: ' . mysql_error());
 
         # Let's see if this is a b8 database and the version is okay
-        $this->check_database();
+        $this->checkDatabase();
     }
 
     /**
@@ -128,7 +128,7 @@ class b8_storage_mysql extends b8_storage_base
      * @return mixed Returns an array of the returned data in the format array(token => data) or an empty array if there was no data.
      */
 
-    protected function _get_query($tokens)
+    protected function _getQuery($tokens)
     {
         # Construct the query ...
         if (count($tokens) > 1) {

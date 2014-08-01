@@ -1,6 +1,6 @@
 <?php
 
-#   Copyright (C) 2006-2013 Tobias Leupold <tobias.leupold@web.de>
+#   Copyright (C) 2006-2014 Tobias Leupold <tobias.leupold@web.de>
 #
 #   This file is part of the b8 package
 #
@@ -22,7 +22,7 @@
  * Based on the MySQL backend
  *
  * Copyright (C) 2013 Tom Regner <tom@goochesa.de>
- * Copyright (C) 2013 Tobias Leupold <tobias.leupold@web.de>
+ * Copyright (C) 2013-2014 Tobias Leupold <tobias.leupold@web.de>
  *
  * @license LGPL 2.1
  * @access public
@@ -56,55 +56,40 @@ class b8_storage_postgresql extends b8_storage_base
     * @access public
     * @param string $config
     */
-
     function __construct($config, &$degenerator)
     {
         # Pass the degenerator instance to this class
         $this->degenerator = $degenerator;
 
         # Validate the config items
-
-        foreach($config as $name => $value) {
-
-            switch($name) {
-
-                case 'table_name':
-                case 'host':
-                case 'user':
-                case 'pass':
-                case 'database':
-                case 'schema':
-                case 'port':
-                    $this->config[$name] = (string) $value;
-                    break;
-
-                case 'connection':
-                    $this->config['connection'] = $value;
-                    break;
-
-                default:
-                    throw new Exception("b8_storage_postgresql: Unknown configuration key: \"{$name}\"");
-
+        foreach ($config as $name => $value) {
+            switch ($name) {
+            case 'table_name':
+            case 'host':
+            case 'user':
+            case 'pass':
+            case 'database':
+            case 'schema':
+            case 'port':
+                $this->config[$name] = (string) $value;
+                break;
+            case 'connection':
+                $this->config['connection'] = $value;
+                break;
+            default:
+                throw new Exception("b8_storage_postgresql: Unknown configuration key: \"{$name}\"");
             }
-
         }
 
-        if($this->config['connection'] !== NULL) {
-
+        if ($this->config['connection'] !== NULL) {
             # A connection has been given, so check it
-
-            if(!$this->config['connection'] instanceof PDO_PGSQL)
+            if (! $this->config['connection'] instanceof PDO_PGSQL)
                 throw new Exception('b8_storage_postgresql: The object passed via the "connection" paramter is no PDO_PGSQL instance.');
 
             # If we reach here, we can use the passed resource.
             $this->_connection = $this->config['connection'];
-
-        }
-
-        else {
-
+        } else {
             # Create a connection
-
             try {
                 $this->_connection = new PDO(
                     'pgsql:'.
@@ -119,7 +104,6 @@ class b8_storage_postgresql extends b8_storage_base
             catch(PDOException $e) {
                 throw new Exception('b8_storage_postgresql: ' . $e->getMessage());
             }
-
         }
 
         # Check to see if the wordlist table exists
@@ -128,12 +112,11 @@ class b8_storage_postgresql extends b8_storage_base
             WHERE schemaname = ? AND tablename = ?
         ');
 
-        if(!$sth->execute(array($this->_config['schema'], $this->_config['table_name'])))
+        if (!$sth->execute(array($this->_config['schema'], $this->_config['table_name'])))
             throw new Exception('b8_storage_postgresql: ' . print_r($sth->errorInfo(), true));
 
         # Let's see if this is a b8 database and the version is okay
         $this->check_database();
-
     }
 
     /**
@@ -145,14 +128,11 @@ class b8_storage_postgresql extends b8_storage_base
 
     function __destruct()
     {
-
         # Commit any changes before closing
         $this->_commit();
-
         # Just close the connection if no link-resource was passed and b8 created it's own connection
-        if($this->config['connection'] === NULL)
+        if ($this->config['connection'] === NULL)
             unset($this->_connection);
-
     }
 
     /**
@@ -162,34 +142,25 @@ class b8_storage_postgresql extends b8_storage_base
     * @param array $tokens
     * @return mixed Returns an array of the returned data in the format array(token => data) or an empty array if there was no data.
     */
-
     protected function _get_query($tokens)
     {
-
         # Construct the query ...
-
         $count = count($tokens);
-
-        if($count > 1) {
+        if ($count > 1) {
             # We have more than 1 token
             $qList = $this->_makePlaceholders($count);
             $where = "token IN ({$qList})";
-        }
-
-        elseif(count($tokens) == 1) {
+        } elseif(count($tokens) == 1) {
             # We have exactly one token
             $where = "token = ?";
             $tokens = $tokens[0];
-        }
-
-        elseif(count($tokens) == 0) {
+        } elseif(count($tokens) == 0) {
             # We have no tokens
             # This can happen when we do a degenerates lookup and we don't have any degenerates.
             return array();
         }
 
         # ... and fetch the data
-
         $sql = '
             SELECT token, count_ham, count_spam
             FROM ' . $this->config['schema'] . '.' . $this->config['table_name'] . "
@@ -197,13 +168,11 @@ class b8_storage_postgresql extends b8_storage_base
         ;
 
         $sth = $this->_connection->prepare($sql);
-
-        if($sth->execute($tokens) === FALSE)
+        if ($sth->execute($tokens) === FALSE)
             return array();
 
         $data = array();
-
-        while($row = $sth->fetch(PDO::FETCH_ASSOC)) {
+        while ($row = $sth->fetch(PDO::FETCH_ASSOC)) {
             $data[$row['token']] = array(
                 'count_ham'  => $row['count_ham'],
                 'count_spam' => $row['count_spam']
@@ -211,11 +180,8 @@ class b8_storage_postgresql extends b8_storage_base
         }
 
         $sth->closeCursor();
-
         unset($sth);
-
         return $data;
-
     }
 
     /**
@@ -226,7 +192,6 @@ class b8_storage_postgresql extends b8_storage_base
     * @param array $count
     * @return void
     */
-
     protected function _put($token, $count)
     {
         array_push($this->_puts, array($token, $count['count_ham'], $count['count_spam']));
@@ -240,7 +205,6 @@ class b8_storage_postgresql extends b8_storage_base
     * @param array $count
     * @return void
     */
-
     protected function _update($token, $count)
     {
         # Puts and updates are treated the same
@@ -255,7 +219,6 @@ class b8_storage_postgresql extends b8_storage_base
     * @param string $token
     * @return void
     */
-
     protected function _del($token)
     {
         array_push($this->_deletes, $token);
@@ -270,26 +233,18 @@ class b8_storage_postgresql extends b8_storage_base
 
     protected function _commit()
     {
-
         $deleteCount = count($this->_deletes);
-
-        if($deleteCount > 0) {
-
+        if ($deleteCount > 0) {
             $sth = $this->_connection->prepare("
                 DELETE FROM {$this->config['schema']}.{$this->config['table_name']}
                 WHERE token IN (" . $this->_makePlaceholders($deleteCount) . ");
             ");
-
             $sth->execute($this->_deletes);
-
             $this->_deletes = array();
-
         }
 
         $putsCount = count($this->_puts);
-
-        if($putsCount > 0) {
-
+        if ($putsCount > 0) {
             $sql = "
                 INSERT INTO {$this->config['schema']}.{$this->config['table_name']}(
                     token,
@@ -300,15 +255,13 @@ class b8_storage_postgresql extends b8_storage_base
             ";
 
             $q = array();
-
-            for($i = 0; $i < $putsCount; ++$i)
+            for ($i = 0; $i < $putsCount; ++$i)
                 $q[] = "(?,?,?)";
 
             $sql .= implode(", ", $q);
 
             $sth = $this->_connection->prepare($sql);
-
-            for($i = 1, $l = 0; $l < $putsCount; ++$l, ++$i) {
+            for ($i = 1, $l = 0; $l < $putsCount; ++$l, ++$i) {
                 $sth->bindValue($i, $this->_puts[$l][0]);
                 ++$i; $sth->bindValue($i, $this->_puts[$l][1]);
                 ++$i; $sth->bindValue($i, $this->_puts[$l][2]);
@@ -316,9 +269,7 @@ class b8_storage_postgresql extends b8_storage_base
 
             $sth->execute();
             $this->_puts = array();
-
         }
-
     }
 
     /**
@@ -327,7 +278,6 @@ class b8_storage_postgresql extends b8_storage_base
     * @access private
     * @return string returns the placeholder string
     */
-
     private function _makePlaceholders($count)
     {
         return str_repeat('?,', $count - 1) . '?';

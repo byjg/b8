@@ -1,6 +1,6 @@
 <?php
 
-#   Copyright (C) 2006-2012 Tobias Leupold <tobias.leupold@web.de>
+#   Copyright (C) 2006-2014 Tobias Leupold <tobias.leupold@web.de>
 #
 #   This file is part of the b8 package
 #
@@ -19,7 +19,7 @@
 
 /**
  * The DBA (Berkeley DB) backend for communicating with the database.
- * Copyright (C) 2006-2012 Tobias Leupold <tobias.leupold@web.de>
+ * Copyright (C) 2006-2014 Tobias Leupold <tobias.leupold@web.de>
  *
  * @license LGPL 2.1
  * @access public
@@ -43,57 +43,41 @@ class b8_storage_dba extends b8_storage_base
      * @access public
      * @param string $config
      */
-
     function __construct($config, &$degenerator)
     {
-
         # Pass the degenerator instance to this class
         $this->degenerator = $degenerator;
 
         # Validate the config items
-
         foreach ($config as $name => $value) {
-
-            switch($name) {
-
-                case 'database':
-                case 'handler':
-                    $this->config[$name] = (string) $value;
-                    break;
-
-                default:
-                    throw new Exception("b8_storage_dba: Unknown configuration key: \"$name\"");
-
+            switch ($name) {
+            case 'database':
+            case 'handler':
+                $this->config[$name] = (string) $value;
+                break;
+            default:
+                throw new Exception("b8_storage_dba: Unknown configuration key: \"$name\"");
             }
-
         }
 
         # Connect to the database
-
         $dbfile = dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . $this->config['database'];
-
-        if(is_file($dbfile) !== TRUE)
+        if (is_file($dbfile) !== TRUE)
             throw new Exception("b8_storage_dba: Database file \"{$this->config['database']}\" not found.");
-
-        if(is_readable($dbfile) !== TRUE)
+        if (is_readable($dbfile) !== TRUE)
             throw new Exception("b8_storage_dba: Database file \"{$this->config['database']}\" is not readable.");
-
-        if(is_writeable($dbfile) !== TRUE)
+        if (is_writeable($dbfile) !== TRUE)
             throw new Exception("b8_storage_dba: Database file \"{$this->config['database']}\" is not writeable.");
-
         $this->_db = dba_open($dbfile, 'w', $this->config['handler']);
 
-        if($this->_db === FALSE) {
-
+        if ($this->_db === FALSE) {
             $this->connected = FALSE;
             $this->_db = NULL;
-
             throw new Exception("b8_storage_dba: Could not connect to database file \"{$this->config['database']}\".");
         }
 
         # Let's see if this is a b8 database and the version is okay
         $this->check_database();
-
     }
 
     /**
@@ -102,7 +86,6 @@ class b8_storage_dba extends b8_storage_base
      * @access public
      * @return void
      */
-
     function __destruct()
     {
         dba_close($this->_db);
@@ -115,32 +98,25 @@ class b8_storage_dba extends b8_storage_base
      * @param array $tokens
      * @return mixed Returns an array of the returned data in the format array(token => data) or an empty array if there was no data.
      */
-
     protected function _get_query($tokens)
     {
-
         $data = array();
 
         foreach ($tokens as $token) {
-
             # Try to the raw data in the format "count_ham count_spam lastseen"
             $count = dba_fetch($token, $this->_db);
 
-            if($count !== FALSE) {
-
+            if ($count !== FALSE) {
                 # Split the data by space characters
                 $split_data = explode(' ', $count);
 
                 # As the internal variables just have one single value,
                 # we have to check for this
-
                 $count_ham  = NULL;
                 $count_spam = NULL;
-
-                if(isset($split_data[0]))
+                if (isset($split_data[0]))
                     $count_ham  = (int) $split_data[0];
-
-                if(isset($split_data[1]))
+                if (isset($split_data[1]))
                     $count_spam = (int) $split_data[1];
 
                 # Append the parsed data
@@ -148,13 +124,10 @@ class b8_storage_dba extends b8_storage_base
                     'count_ham'  => $count_ham,
                     'count_spam' => $count_spam
                 );
-
             }
-
         }
 
         return $data;
-
     }
 
     /**
@@ -164,15 +137,11 @@ class b8_storage_dba extends b8_storage_base
      * @param array ('count_ham' => int, 'count_spam' => int)
      * @return string The translated array
      */
-
     private function _translate_count($count) {
-
         # Assemble the count data string
         $count_data = "{$count['count_ham']} {$count['count_spam']}";
-
         # Remove whitespace from data of the internal variables
         return(rtrim($count_data));
-
     }
 
     /**
@@ -183,7 +152,6 @@ class b8_storage_dba extends b8_storage_base
      * @param string $count
      * @return bool TRUE on success or FALSE on failure
      */
-
     protected function _put($token, $count) {
         return dba_insert($token, $this->_translate_count($count), $this->_db);
     }
@@ -196,7 +164,6 @@ class b8_storage_dba extends b8_storage_base
      * @param string $count
      * @return bool TRUE on success or FALSE on failure
      */
-
     protected function _update($token, $count)
     {
         return dba_replace($token, $this->_translate_count($count), $this->_db);
@@ -209,7 +176,6 @@ class b8_storage_dba extends b8_storage_base
      * @param string $token
      * @return bool TRUE on success or FALSE on failure
      */
-
     protected function _del($token)
     {
         return dba_delete($token, $this->_db);
@@ -221,7 +187,6 @@ class b8_storage_dba extends b8_storage_base
      * @access protected
      * @return void
      */
-
     protected function _commit()
     {
         return;

@@ -1,6 +1,6 @@
 <?php
 
-#   Copyright (C) 2006-2012 Tobias Leupold <tobias.leupold@web.de>
+#   Copyright (C) 2006-2014 Tobias Leupold <tobias.leupold@web.de>
 #
 #   This file is part of the b8 package
 #
@@ -18,7 +18,7 @@
 #   Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 /**
- * Copyright (C) 2006-2012 Tobias Leupold <tobias.leupold@web.de>
+ * Copyright (C) 2006-2014 Tobias Leupold <tobias.leupold@web.de>
  *
  * @license LGPL 2.1
  * @access public
@@ -42,31 +42,21 @@ class b8_degenerator_default
      * @access public
      * @return void
      */
-
     function __construct($config)
     {
-
         # Validate config data
-
         foreach ($config as $name => $value) {
-
             switch($name) {
-
-                case 'multibyte':
-                    $this->config[$name] = (bool) $value;
-                    break;
-
-                case 'encoding':
-                    $this->config[$name] = (string) $value;
-                    break;
-
-                default:
-                    throw new Exception("b8_degenerator_default: Unknown configuration key: \"$name\"");
-
+            case 'multibyte':
+                $this->config[$name] = (bool) $value;
+                break;
+            case 'encoding':
+                $this->config[$name] = (string) $value;
+                break;
+            default:
+                throw new Exception("b8_degenerator_default: Unknown configuration key: \"$name\"");
             }
-
         }
-
     }
 
     /**
@@ -76,17 +66,14 @@ class b8_degenerator_default
      * @param array $tokens
      * @return array An array containing an array of degenerated tokens for each token
      */
-
     public function degenerate(array $words)
     {
-
         $degenerates = array();
 
-        foreach($words as $word)
+        foreach ($words as $word)
             $degenerates[$word] = $this->_degenerate_word($word);
 
         return $degenerates;
-
     }
 
     /**
@@ -96,20 +83,17 @@ class b8_degenerator_default
      * @param array $list The list to process
      * @return array The list without duplicates
      */
-
     protected function _delete_duplicates($word, $list)
     {
-
         $list_processed = array();
 
         # Check each upper/lower version
-        foreach($list as $alt_word) {
-            if($alt_word != $word)
+        foreach ($list as $alt_word) {
+            if ($alt_word != $word)
                 array_push($list_processed, $alt_word);
         }
 
         return $list_processed;
-
     }
 
     /**
@@ -119,25 +103,19 @@ class b8_degenerator_default
      * @param string $word
      * @return array An array of degenerated words
      */
-
     protected function _degenerate_word($word)
     {
-
         # Check for any stored words so the process doesn't have to repeat
-        if(isset($this->degenerates[$word]) === TRUE)
+        if (isset($this->degenerates[$word]) === TRUE)
             return $this->degenerates[$word];
 
-        # Add different versions of upper and lower case and ucfirst
-
-        $upper_lower = array();
-
-        if($this->config['multibyte'] === FALSE) {
+        # Create different versions of upper and lower case
+        if ($this->config['multibyte'] === FALSE) {
             # The standard upper/lower versions
             $lower = strtolower($word);
             $upper = strtoupper($word);
             $first = substr($upper, 0, 1) . substr($lower, 1, strlen($word));
-        }
-        elseif($this->config['multibyte'] === TRUE) {
+        } elseif ($this->config['multibyte'] === TRUE) {
             # The multibyte upper/lower versions
             $lower = mb_strtolower($word, $this->config['encoding']);
             $upper = mb_strtoupper($word, $this->config['encoding']);
@@ -145,6 +123,7 @@ class b8_degenerator_default
         }
 
         # Add the versions
+        $upper_lower = array();
         array_push($upper_lower, $lower);
         array_push($upper_lower, $upper);
         array_push($upper_lower, $first);
@@ -156,34 +135,25 @@ class b8_degenerator_default
         array_push($degenerate, $word);
 
         # Degenerate all versions
-
-        foreach($degenerate as $alt_word) {
-
+        foreach ($degenerate as $alt_word) {
             # Look for stuff like !!! and ???
-
-            if(preg_match('/[!?]$/', $alt_word) > 0) {
-
+            if (preg_match('/[!?]$/', $alt_word) > 0) {
                 # Add versions with different !s and ?s
-
-                if(preg_match('/[!?]{2,}$/', $alt_word) > 0) {
+                if (preg_match('/[!?]{2,}$/', $alt_word) > 0) {
                     $tmp = preg_replace('/([!?])+$/', '$1', $alt_word);
                     array_push($degenerate, $tmp);
                 }
 
                 $tmp = preg_replace('/([!?])+$/', '', $alt_word);
                 array_push($degenerate, $tmp);
-
             }
 
             # Look for "..." at the end of the word
-
             $alt_word_int = $alt_word;
-
-            while(preg_match('/[\.]$/', $alt_word_int) > 0) {
+            while (preg_match('/[\.]$/', $alt_word_int) > 0) {
                 $alt_word_int = substr($alt_word_int, 0, strlen($alt_word_int) - 1);
                 array_push($degenerate, $alt_word_int);
             }
-
         }
 
         # Some degenerates are the same as the original word. These don't have
@@ -194,7 +164,6 @@ class b8_degenerator_default
         $this->degenerates[$word] = $degenerate;
 
         return $degenerate;
-
     }
 
 }

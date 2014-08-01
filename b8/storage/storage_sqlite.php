@@ -1,6 +1,6 @@
 <?php
 
-#   Copyright (C) 2006-2013 Tobias Leupold <tobias.leupold@web.de>
+#   Copyright (C) 2006-2014 Tobias Leupold <tobias.leupold@web.de>
 #
 #   This file is part of the b8 package
 #
@@ -20,7 +20,7 @@
 /**
  * The SQLite 3 backend for communicating with the database.
  * Copyright (C) 2013 BohwaZ <bohwaz@bohwaz.net>
- * Copyright (C) 2013 Tobias Leupold <tobias.leupold@web.de>
+ * Copyright (C) 2013-2014 Tobias Leupold <tobias.leupold@web.de>
  *
  * @license LGPL 2.1
  * @access public
@@ -31,7 +31,6 @@
 
 class b8_storage_sqlite extends b8_storage_base
 {
-
     public $config = array(
         'database'   => 'wordlist.sqlite',
         'table_name' => 'b8_wordlist',
@@ -46,61 +45,46 @@ class b8_storage_sqlite extends b8_storage_base
      * @access public
      * @param string $config
      */
-
     function __construct($config, &$degenerator)
     {
-
         # Pass the degenerator instance to this class
         $this->degenerator = $degenerator;
 
         # Validate the config items
-
         foreach ($config as $name => $value) {
-
-            switch($name) {
-
-                case 'database':
-                case 'table_name':
-                    $this->config[$name] = (string) $value;
-                    break;
-
-                default:
-                    throw new Exception("b8_storage_sqlite: Unknown configuration key: \"$name\"");
-
+            switch ($name) {
+            case 'database':
+            case 'table_name':
+                $this->config[$name] = (string) $value;
+                break;
+            default:
+                throw new Exception("b8_storage_sqlite: Unknown configuration key: \"$name\"");
             }
-
         }
 
         # Connect to the database
 
         # First, we do some checks.
-        if(file_exists($this->config['database']) !== TRUE)
+        if( file_exists($this->config['database']) !== TRUE)
             throw new Exception("b8_storage_sqlite: Database file \"{$this->config['database']}\" does not exist.");
-        if(is_file($this->config['database']) !== TRUE)
+        if (is_file($this->config['database']) !== TRUE)
             throw new Exception("b8_storage_sqlite: Database file \"{$this->config['database']}\" is not a file.");
-        if(is_readable($this->config['database']) !== TRUE)
+        if (is_readable($this->config['database']) !== TRUE)
             throw new Exception("b8_storage_sqlite: Database file \"{$this->config['database']}\" is not readable.");
-        if(is_writable($this->config['database']) !== TRUE)
+        if (is_writable($this->config['database']) !== TRUE)
             throw new Exception("b8_storage_sqlite: Database file \"{$this->config['database']}\" is not writeable.");
 
         # At least, the database file exists and we can read and write it. So connect to it.
-
         $this->_db = new SQLite3($this->config['database']);
-
-        if($this->_db === FALSE) {
-
+        if ($this->_db === FALSE) {
             $this->connected = FALSE;
             $this->_db = NULL;
-
             throw new Exception("b8_storage_sqlite: Could not connect to database file \"{$this->config['database']}\".");
-
         }
 
         # Let's see if we actually have an SQLite database file
         # and if it does actually contain the given b8 wordlist table
-
         $escapedTable = $this->_db->escapeString($this->config['table_name']);
-
         $result = $this->_db->query("
             SELECT tbl_name FROM sqlite_master
             WHERE type='table'
@@ -108,8 +92,7 @@ class b8_storage_sqlite extends b8_storage_base
         ;");
 
         $row = $result->fetchArray(SQLITE3_ASSOC);
-
-        if($row === FALSE)
+        if ($row === FALSE)
             throw new Exception("b8_storage_sqlite: Database file \"{$this->config['database']}\" does not contain table \"{$this->config['table_name']}\".");
 
         # Let's see if the wordlist table actually has the needed structure
@@ -123,12 +106,11 @@ class b8_storage_sqlite extends b8_storage_base
             LIMIT 1
         ;");
 
-        if($result === FALSE)
+        if ($result === FALSE)
             throw new Exception("b8_storage_sqlite: Table \"{$this->config['table_name']}\" in database file \"{$this->config['database']}\" does not have the needed structure.");
 
         # Let's see if this is a b8 database and the version is okay
         $this->check_database();
-
     }
 
     /**
@@ -137,16 +119,12 @@ class b8_storage_sqlite extends b8_storage_base
      * @access public
      * @return void
      */
-
     function __destruct()
     {
-
         # Commit any queries
         $this->_commit();
-
         # Close the connection
         $this->_db->close();
-
     }
 
     /**
@@ -156,41 +134,28 @@ class b8_storage_sqlite extends b8_storage_base
      * @param array $tokens
      * @return mixed Returns an array of the returned data in the format array(token => data) or an empty array if there was no data.
      */
-
     protected function _get_query($tokens)
     {
-
         # Construct the query ...
-
-        if(count($tokens) > 1) {
-
+        if (count($tokens) > 1) {
             # We have more than 1 token
-
             $where = array();
-
             foreach ($tokens as $token) {
                 $token = $this->_db->escapeString($token);
                 array_push($where, $token);
             }
-
             $where = "token IN ('" . implode("', '", $where) . "')";
-
-        }
-
-        elseif(count($tokens) == 1) {
+        } elseif (count($tokens) == 1) {
             # We have exactly one token
             $token = $this->_db->escapeString($tokens[0]);
             $where = "token = '" . $token . "'";
-        }
-
-        elseif(count($tokens) == 0) {
+        } elseif (count($tokens) == 0) {
             # We have no tokens
             # This can happen when we do a degenerates lookup and we don't have any degenerates.
             return array();
         }
 
         # ... and fetch the data
-
         $result = $this->_db->query('
             SELECT token, count_ham, count_spam
             FROM ' . $this->config['table_name'] . '
@@ -198,8 +163,7 @@ class b8_storage_sqlite extends b8_storage_base
         ;');
 
         $data = array();
-
-        while($row = $result->fetchArray(SQLITE3_ASSOC)) {
+        while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
             $data[$row['token']] = array(
                 'count_ham'  => $row['count_ham'],
                 'count_spam' => $row['count_spam']
@@ -207,9 +171,7 @@ class b8_storage_sqlite extends b8_storage_base
         }
 
         $result->finalize();
-
         return $data;
-
     }
 
     /**
@@ -220,10 +182,8 @@ class b8_storage_sqlite extends b8_storage_base
      * @param string $count
      * @return bool TRUE on success or FALSE on failure
      */
-
     protected function _put($token, $count)
     {
-
         # Check if we are in transaction mode, start it if necessary
         $this->_checkTransactionStarted();
 
@@ -241,7 +201,6 @@ class b8_storage_sqlite extends b8_storage_base
         $statement->bindValue(3, $count['count_spam']);
 
         return $statement->execute() ? TRUE : FALSE;
-
     }
 
     /**
@@ -255,7 +214,6 @@ class b8_storage_sqlite extends b8_storage_base
 
     protected function _update($token, $count)
     {
-
         # Check if we are in transaction mode, start it if necessary
         $this->_checkTransactionStarted();
 
@@ -273,7 +231,6 @@ class b8_storage_sqlite extends b8_storage_base
         $statement->bindValue(3, $count['count_spam']);
 
         return $statement->execute() ? TRUE : FALSE;
-
     }
 
     /**
@@ -283,10 +240,8 @@ class b8_storage_sqlite extends b8_storage_base
      * @param string $token
      * @return bool TRUE on success or FALSE on failure
      */
-
     protected function _del($token)
     {
-
         # Check if we are in transaction mode, start it if necessary
         $this->_checkTransactionStarted();
 
@@ -294,11 +249,9 @@ class b8_storage_sqlite extends b8_storage_base
             DELETE FROM ' . $this->config['table_name'] . '
             WHERE token = ?
         ;');
-
         $statement->bindValue(1, $token);
 
         return $statement->execute() ? TRUE : FALSE;
-
     }
 
     /**
@@ -307,10 +260,9 @@ class b8_storage_sqlite extends b8_storage_base
      * @access protected
      * @return void
      */
-
     protected function _checkTransactionStarted()
     {
-        if($this->_transactionStarted === FALSE) {
+        if ($this->_transactionStarted === FALSE) {
             $this->_db->exec('BEGIN;');
             $this->_transactionStarted = TRUE;
         }
@@ -322,10 +274,9 @@ class b8_storage_sqlite extends b8_storage_base
      * @access protected
      * @return void
      */
-
     protected function _commit()
     {
-        if($this->_transactionStarted === TRUE) {
+        if ($this->_transactionStarted === TRUE) {
             $this->_db->exec('END;');
             $this->_transactionStarted = FALSE;
         }

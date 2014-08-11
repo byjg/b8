@@ -54,7 +54,9 @@ class b8_degenerator_default
                     $this->config[$name] = (string) $value;
                     break;
                 default:
-                    throw new Exception("b8_degenerator_default: Unknown configuration key: \"$name\"");
+                    throw new Exception(
+                        "b8_degenerator_default: Unknown configuration key: \"$name\""
+                    );
             }
         }
     }
@@ -70,8 +72,9 @@ class b8_degenerator_default
     {
         $degenerates = array();
 
-        foreach ($words as $word)
+        foreach ($words as $word) {
             $degenerates[$word] = $this->_degenerateWord($word);
+        }
 
         return $degenerates;
     }
@@ -89,8 +92,9 @@ class b8_degenerator_default
 
         # Check each upper/lower version
         foreach ($list as $alt_word) {
-            if ($alt_word != $word)
+            if ($alt_word != $word) {
                 array_push($list_processed, $alt_word);
+            }
         }
 
         return $list_processed;
@@ -106,8 +110,9 @@ class b8_degenerator_default
     protected function _degenerateWord($word)
     {
         # Check for any stored words so the process doesn't have to repeat
-        if (isset($this->degenerates[$word]) === true)
+        if (isset($this->degenerates[$word]) === true) {
             return $this->degenerates[$word];
+        }
 
         # Create different versions of upper and lower case
         if ($this->config['multibyte'] === false) {
@@ -119,7 +124,10 @@ class b8_degenerator_default
             # The multibyte upper/lower versions
             $lower = mb_strtolower($word, $this->config['encoding']);
             $upper = mb_strtoupper($word, $this->config['encoding']);
-            $first = mb_substr($upper, 0, 1, $this->config['encoding']) . mb_substr($lower, 1, mb_strlen($word), $this->config['encoding']);
+            $first = mb_substr(
+                $upper, 0, 1, $this->config['encoding']) .
+                mb_substr($lower, 1, mb_strlen($word), $this->config['encoding']
+            );
         }
 
         # Add the versions

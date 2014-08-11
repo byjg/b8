@@ -47,11 +47,14 @@ abstract class b8_storage_base
     {
         $internals = $this->getInternals();
         if (isset($internals['dbversion'])) {
-            if ($internals['dbversion'] == b8::DBVERSION)
+            if ($internals['dbversion'] == b8::DBVERSION) {
                 return;
+            }
         }
 
-        throw new Exception('b8_storage_base: The connected database is not a b8 v' . b8::DBVERSION . ' database.');
+        throw new Exception(
+            'b8_storage_base: The connected database is not a b8 v' . b8::DBVERSION . ' database.'
+        );
     }
 
     /**
@@ -76,14 +79,15 @@ abstract class b8_storage_base
         $texts_spam = null;
         $dbversion = null;
 
-        if(isset($internals[self::INTERNALS_TEXTS]['count_ham']))
+        if(isset($internals[self::INTERNALS_TEXTS]['count_ham'])) {
             $texts_ham = (int) $internals[self::INTERNALS_TEXTS]['count_ham'];
-
-        if(isset($internals[self::INTERNALS_TEXTS]['count_spam']))
+        }
+        if(isset($internals[self::INTERNALS_TEXTS]['count_spam'])) {
             $texts_spam = (int) $internals[self::INTERNALS_TEXTS]['count_spam'];
-
-        if(isset($internals[self::INTERNALS_DBVERSION]['count_ham']))
+        }
+        if(isset($internals[self::INTERNALS_DBVERSION]['count_ham'])) {
             $dbversion = (int) $internals[self::INTERNALS_DBVERSION]['count_ham'];
+        }
 
         return array(
             'texts_ham'  => $texts_ham,
@@ -97,7 +101,9 @@ abstract class b8_storage_base
      *
      * @access public
      * @param array $tokens
-     * @return mixed Returns false on failure, otherwise returns array of returned data in the format array('tokens' => array(token => count), 'degenerates' => array(token => array(degenerate => count))).
+     * @return mixed Returns false on failure, otherwise returns array of returned data
+               in the format array('tokens' => array(token => count),
+               'degenerates' => array(token => array(degenerate => count))).
      */
     public function get($tokens)
     {
@@ -107,8 +113,9 @@ abstract class b8_storage_base
         # Check if we have to degenerate some tokens
         $missing_tokens = array();
         foreach ($tokens as $token) {
-            if (! isset($token_data[$token]))
+            if (! isset($token_data[$token])) {
                 $missing_tokens[] = $token;
+            }
         }
 
         if (count($missing_tokens) > 0) {
@@ -119,8 +126,9 @@ abstract class b8_storage_base
             $degenerates = $this->degenerator->degenerate($missing_tokens);
 
             # ... and look them up
-            foreach ($degenerates as $token => $token_degenerates)
+            foreach ($degenerates as $token => $token_degenerates) {
                 $degenerates_list = array_merge($degenerates_list, $token_degenerates);
+            }
 
             $token_data = array_merge($token_data, $this->_getQuery($degenerates_list));
         }
@@ -184,36 +192,44 @@ abstract class b8_storage_base
 
                 # Increase or decrease the right counter
                 if ($action === b8::LEARN) {
-                    if ($category === b8::HAM)
+                    if ($category === b8::HAM) {
                         $count_ham += $count;
-                    elseif ($category === b8::SPAM)
+                    } elseif ($category === b8::SPAM) {
                         $count_spam += $count;
+                    }
                 } elseif ($action == b8::UNLEARN) {
-                    if ($category === b8::HAM)
+                    if ($category === b8::HAM) {
                         $count_ham -= $count;
-                    elseif ($category === b8::SPAM)
+                    } elseif ($category === b8::SPAM) {
                         $count_spam -= $count;
+                    }
                 }
 
                 # We don't want to have negative values
-                if ($count_ham < 0)
+                if ($count_ham < 0) {
                     $count_ham = 0;
-                if ($count_spam < 0)
+                }
+                if ($count_spam < 0) {
                     $count_spam = 0;
+                }
 
                 # Now let's see if we have to update or delete the token
-                if ($count_ham != 0 or $count_spam != 0)
-                    $this->_update($token, array('count_ham' => $count_ham, 'count_spam' => $count_spam));
-                else
+                if ($count_ham != 0 or $count_spam != 0) {
+                    $this->_update(
+                        $token, array('count_ham' => $count_ham, 'count_spam' => $count_spam)
+                    );
+                } else {
                     $this->_del($token);
+                }
             } else {
                 # We don't have the token. If we unlearn a text, we can't delete it
                 # as we don't have it anyway, so just do something if we learn a text
                 if ($action === b8::LEARN) {
-                    if ($category === b8::HAM)
+                    if ($category === b8::HAM) {
                         $data = array('count_ham' => $count, 'count_spam' => 0);
-                    elseif ($category === b8::SPAM)
+                    } elseif ($category === b8::SPAM) {
                         $data = array('count_ham' => 0, 'count_spam' => $count);
+                    }
                     $this->_put($token, $data);
                 }
             }
@@ -221,21 +237,30 @@ abstract class b8_storage_base
 
         # Now, all token have been processed, so let's update the right text
         if ($action === b8::LEARN) {
-            if ($category === b8::HAM)
+            if ($category === b8::HAM) {
                 $internals['texts_ham']++;
-            elseif ($category === b8::SPAM)
+            } elseif ($category === b8::SPAM) {
                 $internals['texts_spam']++;
+            }
         } elseif ($action == b8::UNLEARN) {
             if ($category === b8::HAM) {
-                if ($internals['texts_ham'] > 0)
+                if ($internals['texts_ham'] > 0) {
                     $internals['texts_ham']--;
+                }
             } elseif ($category === b8::SPAM) {
-                if ($internals['texts_spam'] > 0)
+                if ($internals['texts_spam'] > 0) {
                     $internals['texts_spam']--;
+                }
             }
         }
 
-        $this->_update(self::INTERNALS_TEXTS, array('count_ham' => $internals['texts_ham'], 'count_spam' => $internals['texts_spam']));
+        $this->_update(
+            self::INTERNALS_TEXTS,
+            array(
+                'count_ham' => $internals['texts_ham'],
+                'count_spam' => $internals['texts_spam']
+            )
+        );
 
         # We're done and can commit all changes to the database now
         $this->_commit();

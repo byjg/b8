@@ -77,14 +77,20 @@ class b8_storage_postgresql extends b8_storage_base
                     $this->config['connection'] = $value;
                     break;
                 default:
-                    throw new Exception("b8_storage_postgresql: Unknown configuration key: \"{$name}\"");
+                    throw new Exception(
+                        "b8_storage_postgresql: Unknown configuration key: \"{$name}\""
+                    );
             }
         }
 
         if ($this->config['connection'] !== null) {
             # A connection has been given, so check it
-            if (! $this->config['connection'] instanceof PDO_PGSQL)
-                throw new Exception('b8_storage_postgresql: The object passed via the "connection" paramter is no PDO_PGSQL instance.');
+            if (! $this->config['connection'] instanceof PDO_PGSQL) {
+                throw new Exception(
+                    'b8_storage_postgresql: The object passed via the "connection" ' .
+                    'paramter is no PDO_PGSQL instance.'
+                );
+            }
 
             # If we reach here, we can use the passed resource.
             $this->_connection = $this->config['connection'];
@@ -110,8 +116,9 @@ class b8_storage_postgresql extends b8_storage_base
             WHERE schemaname = ? AND tablename = ?
         ');
 
-        if (!$sth->execute(array($this->config['schema'], $this->config['table_name'])))
+        if (!$sth->execute(array($this->config['schema'], $this->config['table_name']))) {
             throw new Exception('b8_storage_postgresql: ' . print_r($sth->errorInfo(), true));
+        }
 
         # Let's see if this is a b8 database and the version is okay
         $this->checkDatabase();
@@ -129,8 +136,9 @@ class b8_storage_postgresql extends b8_storage_base
         # Commit any changes before closing
         $this->_commit();
         # Just close the connection if no link-resource was passed and b8 created it's own connection
-        if ($this->config['connection'] === null)
+        if ($this->config['connection'] === null) {
             unset($this->_connection);
+        }
     }
 
     /**
@@ -138,7 +146,8 @@ class b8_storage_postgresql extends b8_storage_base
     *
     * @access protected
     * @param array $tokens
-    * @return mixed Returns an array of the returned data in the format array(token => data) or an empty array if there was no data.
+    * @return mixed Returns an array of the returned data in the format array(token => data)
+              or an empty array if there was no data.
     */
     protected function _getQuery($tokens)
     {
@@ -166,8 +175,9 @@ class b8_storage_postgresql extends b8_storage_base
         ;
 
         $sth = $this->_connection->prepare($sql);
-        if ($sth->execute($tokens) === false)
+        if ($sth->execute($tokens) === false) {
             return array();
+        }
 
         $data = array();
         while ($row = $sth->fetch(PDO::FETCH_ASSOC)) {
@@ -253,8 +263,9 @@ class b8_storage_postgresql extends b8_storage_base
             ";
 
             $q = array();
-            for ($i = 0; $i < $putsCount; ++$i)
+            for ($i = 0; $i < $putsCount; ++$i) {
                 $q[] = "(?,?,?)";
+            }
 
             $sql .= implode(", ", $q);
 

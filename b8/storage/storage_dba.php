@@ -62,18 +62,29 @@ class b8_storage_dba extends b8_storage_base
 
         # Connect to the database
         $dbfile = dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . $this->config['database'];
-        if (is_file($dbfile) !== true)
-            throw new Exception("b8_storage_dba: Database file \"{$this->config['database']}\" not found.");
-        if (is_readable($dbfile) !== true)
-            throw new Exception("b8_storage_dba: Database file \"{$this->config['database']}\" is not readable.");
-        if (is_writeable($dbfile) !== true)
-            throw new Exception("b8_storage_dba: Database file \"{$this->config['database']}\" is not writeable.");
+        if (is_file($dbfile) !== true) {
+            throw new Exception(
+                "b8_storage_dba: Database file \"{$this->config['database']}\" not found."
+            );
+        }
+        if (is_readable($dbfile) !== true) {
+            throw new Exception(
+                "b8_storage_dba: Database file \"{$this->config['database']}\" is not readable."
+            );
+        }
+        if (is_writeable($dbfile) !== true) {
+            throw new Exception(
+                "b8_storage_dba: Database file \"{$this->config['database']}\" is not writeable."
+            );
+        }
         $this->_db = dba_open($dbfile, 'w', $this->config['handler']);
 
         if ($this->_db === false) {
             $this->connected = false;
             $this->_db = null;
-            throw new Exception("b8_storage_dba: Could not connect to database file \"{$this->config['database']}\".");
+            throw new Exception(
+                "b8_storage_dba: Could not connect to database file \"{$this->config['database']}\"."
+            );
         }
 
         # Let's see if this is a b8 database and the version is okay
@@ -96,7 +107,8 @@ class b8_storage_dba extends b8_storage_base
      *
      * @access protected
      * @param array $tokens
-     * @return mixed Returns an array of the returned data in the format array(token => data) or an empty array if there was no data.
+     * @return mixed Returns an array of the returned data in the format array(token => data)
+               or an empty array if there was no data.
      */
     protected function _getQuery($tokens)
     {
@@ -114,10 +126,12 @@ class b8_storage_dba extends b8_storage_base
                 # we have to check for this
                 $count_ham  = null;
                 $count_spam = null;
-                if (isset($split_data[0]))
+                if (isset($split_data[0])) {
                     $count_ham  = (int) $split_data[0];
-                if (isset($split_data[1]))
+                }
+                if (isset($split_data[1])) {
                     $count_spam = (int) $split_data[1];
+                }
 
                 # Append the parsed data
                 $data[$token] = array(

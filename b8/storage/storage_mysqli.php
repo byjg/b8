@@ -24,6 +24,7 @@
  * @license LGPL 2.1
  * @access public
  * @package b8
+ * @author Oliver Lillie (original PHP 5 mysql backend)
  * @author Tobias Leupold
  * @author Lorenzo Masetti (update to mysqli with the help of the MySQL ext/mysql Converter Tool)
  */
@@ -80,23 +81,38 @@ class b8_storage_mysqli extends b8_storage_base
             # A resource has been passed, so check if it's okay.
             if (is_object($this->config['connection']) === true) {
                 $object_type = get_class($this->config['connection']);
-                if ($object_type != 'mysqli')
-                    throw new Exception("b8_storage_mysqli: The object passed via the \"connection\" paramter is no mysqli object but \"$object_type\"");
-            } else
-                throw new Exception('b8_storage_mysqli: The resource passed via the "connection" paramter is no object (should be an object of class mysqli).');
+                if ($object_type != 'mysqli') {
+                    throw new Exception(
+                        "b8_storage_mysqli: The object passed via the \"connection\" " .
+                        "paramter is no mysqli object but \"$object_type\""
+                    );
+                }
+            } else {
+                throw new Exception(
+                    'b8_storage_mysqli: The resource passed via the "connection" paramter is ' .
+                    'no object (should be an object of class mysqli).'
+                );
+            }
 
             # If we reach here, we can use the passed resource.
             $this->_connection = $this->config['connection'];
         } else {
             # We have to connect.
-            $this->_connection = (mysqli_connect($this->config['host'], $this->config['user'], $this->config['pass'], $this->config['database']));
-            if (mysqli_connect_error())
+            $this->_connection = mysqli_connect(
+                $this->config['host'],
+                $this->config['user'],
+                $this->config['pass'],
+                $this->config['database']
+            );
+            if (mysqli_connect_error()) {
                 throw new Exception('b8_storage_mysqli: ' . mysqli_connect_error());
+            }
         }
 
         # Check to see if the wordlist table exists
-        if(mysqli_query( $this->_connection, 'DESCRIBE `' . $this->config['table_name'] . '`') === false)
+        if (mysqli_query($this->_connection, 'DESCRIBE `' . $this->config['table_name'] . '`') === false) {
             throw new Exception('b8_storage_mysqli: ' . mysqli_error($this->connection));
+        }
 
         # Let's see if this is a b8 database and the version is okay
         $this->checkDatabase();
@@ -113,8 +129,9 @@ class b8_storage_mysqli extends b8_storage_base
         # Commit any changes before closing
         $this->_commit();
         # Just close the connection if no link-resource was passed and b8 created it's own connection
-        if ($this->config['connection'] === null)
+        if ($this->config['connection'] === null) {
             mysqli_close($this->_connection);
+        }
     }
 
     /**
@@ -122,7 +139,8 @@ class b8_storage_mysqli extends b8_storage_base
      *
      * @access protected
      * @param array $tokens
-     * @return mixed Returns an array of the returned data in the format array(token => data) or an empty array if there was no data.
+     * @return mixed Returns an array of the returned data in the format array(token => data)
+               or an empty array if there was no data.
      */
     protected function _getQuery($tokens)
     {
@@ -153,8 +171,9 @@ class b8_storage_mysqli extends b8_storage_base
         ');
 
         # Check if anything matched the query
-        if ($result === false)
+        if ($result === false) {
             return array();
+        }
 
         $data = array();
         while ($row = mysqli_fetch_assoc($result)) {
@@ -235,8 +254,9 @@ class b8_storage_mysqli extends b8_storage_base
                 DELETE FROM `{$this->config['table_name']}`
                 WHERE token IN ('" . implode("', '", $this->_deletes) . "');
             ");
-            if (is_object($result) === true)
+            if (is_object($result) === true) {
                 mysqli_free_result($result);
+            }
             $this->_deletes = array();
         }
 
@@ -245,8 +265,9 @@ class b8_storage_mysqli extends b8_storage_base
                 INSERT INTO `{$this->config['table_name']}`(token, count_ham, count_spam)
                 VALUES " . implode(', ', $this->_puts) . ';
             ');
-            if (is_object($result) === true)
+            if (is_object($result) === true) {
                 mysqli_free_result($result);
+            }
             $this->_puts = array();
         }
 
@@ -258,8 +279,9 @@ class b8_storage_mysqli extends b8_storage_base
                 `{$this->config['table_name']}`.count_ham = VALUES(count_ham),
                 `{$this->config['table_name']}`.count_spam = VALUES(count_spam);
             ");
-            if (is_object($result) === true)
+            if (is_object($result) === true) {
                 mysqli_free_result($result);
+            }
             $this->_updates = array();
         }
     }

@@ -95,12 +95,14 @@ class b8_lexer_default
     public function getTokens($text)
     {
         # Check if we actually have a string ...
-        if (is_string($text) === false)
+        if (is_string($text) === false) {
             return self::LEXER_TEXT_NOT_STRING;
+        }
 
         # ... and if it's empty
-        if (empty($text) === true)
+        if (empty($text) === true) {
             return self::LEXER_TEXT_EMPTY;
+        }
 
         # Re-convert the text to the original characters coded in UTF-8, as
         # they have been coded in html entities during the post process
@@ -133,8 +135,9 @@ class b8_lexer_default
         $this->_rawSplit($this->_processed_text);
 
         # Be sure not to return an empty array
-        if (count($this->_tokens) == 0)
+        if (count($this->_tokens) == 0) {
             $this->_tokens['b8*no_tokens'] = 1;
+        }
 
         # Return a list of all found tokens
         return $this->_tokens;
@@ -150,18 +153,21 @@ class b8_lexer_default
     private function _isValid($token)
     {
         # Just to be sure that the token's name won't collide with b8's internal variables
-        if(substr($token, 0, 3) == 'b8*')
+        if(substr($token, 0, 3) == 'b8*') {
             return false;
+        }
 
         # Validate the size of the token
         $len = strlen($token);
-        if ($len < $this->config['min_size'] or $len > $this->config['max_size'])
+        if ($len < $this->config['min_size'] or $len > $this->config['max_size']) {
             return false;
+        }
 
         # We may want to exclude pure numbers
         if ($this->config['allow_numbers'] === false) {
-            if (preg_match($this->regexp['numbers'], $token) > 0)
+            if (preg_match($this->regexp['numbers'], $token) > 0) {
                 return false;
+            }
         }
 
         # Token is okay
@@ -173,25 +179,29 @@ class b8_lexer_default
      *
      * @access private
      * @param string $token
-     * @param bool $remove When set to true, the string given in $word_to_remove is removed from the text passed to the lexer.
+     * @param bool $remove When set to true, the string given in $word_to_remove
+                   is removed from the text passed to the lexer.
      * @param string $word_to_remove
      * @return void
      */
     private function _addToken($token, $remove, $word_to_remove)
     {
         # Check the validity of the token
-        if ($this->_isValid($token) === false)
+        if ($this->_isValid($token) === false) {
             return;
+        }
 
         # Add it to the list or increase it's counter
-        if (isset($this->_tokens[$token]) === false)
+        if (isset($this->_tokens[$token]) === false) {
             $this->_tokens[$token] = 1;
-        else
+        } else {
             $this->_tokens[$token] += 1;
+        }
 
         # If requested, remove the word or it's original version from the text
-        if ($remove === true)
+        if ($remove === true) {
             $this->_processed_text = str_replace($word_to_remove, '', $this->_processed_text);
+        }
     }
 
     /**

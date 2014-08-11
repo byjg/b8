@@ -97,7 +97,8 @@ class b8
         $class = $this->_loadClass('degenerator', $this->config['degenerator']);
         if ($class === false) {
             throw new Exception(
-                "b8: Could not load class definition file for degenerator \"{$this->config['degenerator']}\""
+                "b8: Could not load class definition file for degenerator " .
+                "\"{$this->config['degenerator']}\""
             );
         }
         $this->degenerator = new $class($config_degenerator);
@@ -119,7 +120,8 @@ class b8
         $class = $this->_loadClass('storage', $this->config['storage']);
         if ($class === false) {
             throw new Exception(
-                "b8: Could not load class definition file for storage backend \"{$this->config['storage']}\""
+                "b8: Could not load class definition file for storage backend " .
+                "\"{$this->config['storage']}\""
             );
         }
         $this->storage = new $class($config_storage, $this->degenerator);
@@ -138,14 +140,16 @@ class b8
 
         if (class_exists($complete_class_name, false) === false) {
             # Check if the requested file actually exists
-            if (is_file($class_file) !== true or is_readable($class_file) !== true)
+            if (is_file($class_file) !== true or is_readable($class_file) !== true) {
                 return false;
+            }
 
             # Include it
             $included = require_once($class_file);
 
-            if ($included === false or class_exists($complete_class_name, false) === false)
+            if ($included === false or class_exists($complete_class_name, false) === false) {
                 return false;
+            }
         }
 
         return $complete_class_name;
@@ -161,8 +165,9 @@ class b8
     public function classify($text = null)
     {
         # Let's first see if the user called the function correctly
-        if ($text === null)
+        if ($text === null) {
             return self::CLASSIFYER_TEXT_MISSING;
+        }
 
         # Get the internal database variables, containing the number of ham and
         # spam texts so the spam probability can be calculated in relation to them
@@ -175,8 +180,9 @@ class b8
 
         # Check if the lexer failed
         # (if so, $tokens will be a lexer error code, if not, $tokens will be an array)
-        if (!is_array($tokens))
+        if (!is_array($tokens)) {
             return $tokens;
+        }
 
         # Fetch all available data for the token set from the database
         $this->_token_data = $this->storage->get(array_keys($tokens));
@@ -192,7 +198,9 @@ class b8
 
             # Although we only call this function only here ... let's do the
             # calculation stuff in a function to make this a bit less confusing ;-)
-            $rating[$word] = $this->_getProbability($word, $internals['texts_ham'], $internals['texts_spam']);
+            $rating[$word] = $this->_getProbability(
+                $word, $internals['texts_ham'], $internals['texts_spam']
+            );
 
             $importance[$word] = abs(0.5 - $rating[$word]);
         }
@@ -210,8 +218,9 @@ class b8
                 # If the token's rating is relevant enough, use it
                 if (abs(0.5 - $rating[$tmp['key']]) > $this->config['min_dev']) {
                     # Tokens that appear more than once also count more than once
-                    for ($x = 0, $l = $word_count[$tmp['key']]; $x < $l; $x++)
+                    for ($x = 0, $l = $word_count[$tmp['key']]; $x < $l; $x++) {
                         array_push($relevant, $rating[$tmp['key']]);
+                    }
                 }
             } else {
                 # We have less words as we want to use, so we
@@ -233,8 +242,9 @@ class b8
 
         # If no token was good for calculation, we really don't know how
         # to rate this text, so can return 0.5 without further calculations.
-        if ($hamminess == 1 and $spamminess == 1)
+        if ($hamminess == 1 and $spamminess == 1) {
             return 0.5;
+        }
 
         # Calculate the combined rating
 
@@ -270,7 +280,9 @@ class b8
         if (isset($this->_token_data['tokens'][$word]) === true) {
             # The token is in the database, so we can use it's data as-is
             # and calculate the spamminess of this token directly
-            return $this->_calcProbability($this->_token_data['tokens'][$word], $texts_ham, $texts_spam);
+            return $this->_calcProbability(
+                $this->_token_data['tokens'][$word], $texts_ham, $texts_spam
+            );
         }
 
         # The token was not found, so do we at least have similar words?
@@ -286,8 +298,9 @@ class b8
                 $rating_tmp = $this->_calcProbability($count, $texts_ham, $texts_spam);
 
                 # Is it more important than the rating of another degenerated version?
-                if(abs(0.5 - $rating_tmp) > abs(0.5 - $rating))
+                if(abs(0.5 - $rating_tmp) > abs(0.5 - $rating)) {
                     $rating = $rating_tmp;
+                }
             }
 
             return $rating;
@@ -320,17 +333,20 @@ class b8
         $rel_ham = $data['count_ham'];
         $rel_spam = $data['count_spam'];
 
-        if ($texts_ham > 0)
+        if ($texts_ham > 0) {
             $rel_ham = $data['count_ham'] / $texts_ham;
+        }
 
-        if ($texts_spam > 0)
+        if ($texts_spam > 0) {
             $rel_spam = $data['count_spam'] / $texts_spam;
+        }
 
         $rating = $rel_spam / ($rel_ham + $rel_spam);
 
         # Calculate the better probability proposed by Mr. Robinson
         $all = $data['count_ham'] + $data['count_spam'];
-        return (($this->config['rob_s'] * $this->config['rob_x']) + ($all * $rating)) / ($this->config['rob_s'] + $all);
+        return (($this->config['rob_s'] * $this->config['rob_x']) + ($all * $rating)) /
+               ($this->config['rob_s'] + $all);
     }
 
     /**
@@ -356,10 +372,12 @@ class b8
     public function learn($text = null, $category = null)
     {
         # Let's first see if the user called the function correctly
-        if ($text === null)
+        if ($text === null) {
             return self::TRAINER_TEXT_MISSING;
-        if ($category === null)
+        }
+        if ($category === null) {
             return self::TRAINER_CATEGORY_MISSING;
+        }
 
         return $this->_processText($text, $category, self::LEARN);
     }
@@ -375,10 +393,12 @@ class b8
     public function unlearn($text = null, $category = null)
     {
         # Let's first see if the user called the function correctly
-        if ($text === null)
+        if ($text === null) {
             return self::TRAINER_TEXT_MISSING;
-        if ($category === null)
+        }
+        if ($category === null) {
             return self::TRAINER_CATEGORY_MISSING;
+        }
 
         return $this->_processText($text, $category, self::UNLEARN);
     }
@@ -395,16 +415,18 @@ class b8
     private function _processText($text, $category, $action)
     {
         # Look if the request is okay
-        if ($this->_checkCategory($category) === false)
+        if ($this->_checkCategory($category) === false) {
             return self::TRAINER_CATEGORY_FAIL;
+        }
 
         # Get all tokens from $text
         $tokens = $this->lexer->getTokens($text);
 
         # Check if the lexer failed
         # (if so, $tokens will be a lexer error code, if not, $tokens will be an array)
-        if (!is_array($tokens))
+        if (!is_array($tokens)) {
             return $tokens;
+        }
 
         # Pass the tokens and what to do with it to the storage backend
         return $this->storage->processText($tokens, $category, $action);

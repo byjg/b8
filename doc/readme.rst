@@ -138,12 +138,11 @@ These are some basic settings telling b8 which backend classes to use:
             This has been the original backend for the filter. All content is saved in a single file, you don't need special user rights or a database server. Probably a good choice, as this is very performant and fits exactly to b8's needs. |br|
             If you don't know whether your server's PHP installation supports Berkeley DB, simply run the script ``install/setup_berkeleydb.php``. If it shows a Berkeley DB handler, you can use this backend.
 
-        *mysql (MySQL)*
-            The MySQL relational database system is used very widely on the web and can also be used for storing b8's wordlist. This backend needs of course a running and accessable MySQL server and database. |br|
-            This is the original MySQL backend using the legacy mysql\_* PHP functions. As long as the mysql\_* functions stay in PHP, this backend will stay in b8. Anyways, PHP encourages users to use the newer mysqli\_* functions. As of b8 0.6.1, there's also a backend using these (see below).
-
         *mysqli (MySQL)*
-            MySQL backend that uses the newer mysqli\_* PHP functions instead of the legacy mysql\_* ones to interact with the database.
+            The MySQL relational database system is used very widely on the web and can also be used for storing b8's wordlist. This backend needs of course a running and accessable MySQL server and database. The backend uses the mysqli\_* PHP functions to interact with the database.
+
+        *mysql (MySQL)*
+            This is the original MySQL backend using the legacy mysql\_* PHP functions. PHP encourages users to use the newer mysqli\_* functions. The functions used by this backend have been removed in PHP 7.0.0, so eventually, this backend will also be removed from b8.
 
         *postgresql (PostgreSQL)*
             A PostgreSQL schema with one table can also be used for storing b8's wordlist. This backend needs of course a running and accessable PostgreSQL server and database. |br|
@@ -302,7 +301,7 @@ Setting up a new database
 Setting up a new Berkeley DB
 ````````````````````````````
 
-There's a script that automates setting up a new Berkeley DB for b8. It is located at ``install/setup_berkeleydb.php``. Just run this script on your server and be sure that the directory containing it has the proper access rights set so that the server's HTTP server user or PHP user can create a new file in it (probably ``0666``). The script is quite self-explaining, just run it.
+There's a script that automates setting up a new Berkeley DB for b8. It is located at ``install/setup_berkeleydb.php``. Just run this script on your server and be sure that the directory containing it has the proper access rights set so that the server's HTTP server user or PHP user can create a new file in it (probably ``0777``). The script is quite self-explaining, just run it.
 
 If you prefer to setup a new b8 Berkeley DB manually, just create an empty database and insert the following values:
 

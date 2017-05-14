@@ -30,6 +30,7 @@ namespace B8;
  */
 
 use B8\Degenerator;
+use B8\Degenerator;
 use Exception;
 
 class B8
@@ -65,7 +66,7 @@ class B8
 	const TRAINER_CATEGORY_FAIL    = 'TRAINER_CATEGORY_FAIL';
 
 	/**
-	 * Constructs b8
+	 * Constructs B8
 	 *
 	 * @access public
 	 * @return void
@@ -108,31 +109,12 @@ class B8
 		}
 		
 		# Setup the degenerator class
-		$this->degenerator = new b8_degenerator_default($config_degenerator);
-		
-		# Setup the lexer class
-		
-		$class = $this->_load_class('lexer', $this->config['lexer']);
-		
-		if($class === FALSE)
-			throw new Exception("b8: Could not load class definition file for lexer \"{$this->config['lexer']}\"");
-		
-		$this->lexer = new $class($config_lexer);
+		$this->degenerator = new Degenerator($config_degenerator);
+		$this->lexer = new Lexer($config_lexer);
 		
 		# Setup the storage backend
-		
-		$class = $this->_load_class('storage', 'base');
-		
-		if($class === FALSE)
-			throw new Exception("b8: Could not load class definition file for the storage base class");
-		
-		$class = $this->_load_class('storage', $this->config['storage']);
-		
-		if($class === FALSE)
-			throw new Exception("b8: Could not load class definition file for storage backend \"{$this->config['storage']}\"");
-		
+		$class = 'Storage' . ucfirst($this->config['storage']);
 		$this->storage = new $class($config_storage, $this->degenerator);
-		
 	}
 
 	/**

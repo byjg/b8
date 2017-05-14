@@ -1,6 +1,6 @@
 <?php
 
-namespace B8\B8;
+namespace B8;
 
 #   Copyright (C) 2006-2013 Tobias Leupold <tobias.leupold@web.de>
 #

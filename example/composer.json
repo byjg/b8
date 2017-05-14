@@ -1,0 +1,19 @@
+{
+  "name": "b8/example",
+  "license": "GPL3+",
+  "type": "project",
+  "description": "Example B8 project",
+  "autoload": {
+    "psr-4": { "": "src/" }
+  },
+  "repositories": [
+    {
+      "url": "https://github.com/Greg-Boggs/b8.git",
+      "type": "git"
+    }
+  ],
+  "require": {
+    "php": ">=5.5.9",
+    "gregboggs/b8": "1.*"
+  }
+}

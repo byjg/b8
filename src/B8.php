@@ -30,7 +30,7 @@ namespace B8;
  */
 
 use B8\Degenerator;
-use B8\Degenerator;
+use B8\Lexer;
 use Exception;
 
 class B8

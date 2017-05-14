@@ -1,5 +1,7 @@
 <?php
 
+namespace Example;
+
 #   Copyright (C) 2006-2013 Tobias Leupold <tobias.leupold@web.de>
 #
 #   This file is part of the b8 package
@@ -17,6 +19,7 @@
 #   along with this program; if not, write to the Free Software Foundation,
 #   Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
+use B8;
 
 ##### This is an example script demonstrating how b8 can be used. #####
 
@@ -155,13 +158,10 @@ elseif(isset($_POST['action']) and $_POST['text'] != '') {
 
 	$time_start = microtimeFloat();
 
-	# Include the b8 code
-	require dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'b8' . DIRECTORY_SEPARATOR . 'b8.php';
-
 	# Create a new b8 instance
 	
 	try {
-		$b8 = new b8($config_b8, $config_storage, $config_lexer, $config_degenerator);
+		$b8 = new B8($config_b8, $config_storage, $config_lexer, $config_degenerator);
 	}
 	catch(Exception $e) {
 		echo "<b>example:</b> Could not initialize b8.<br />\n";

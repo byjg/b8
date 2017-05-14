@@ -200,5 +200,3 @@ class Degenerator
 	}
 
 }
-
-?>

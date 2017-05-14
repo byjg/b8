@@ -333,4 +333,3 @@ class StorageMysqli extends StorageBase
 
 }
 
-?>

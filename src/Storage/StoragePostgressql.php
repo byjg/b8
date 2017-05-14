@@ -337,4 +337,3 @@ class StoragePostgressql extends StorageBase
 
 }
 
-?>

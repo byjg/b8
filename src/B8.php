@@ -29,6 +29,9 @@ namespace B8;
  * @author Oliver Lillie (original PHP 5 port)
  */
 
+use B8\Degenerator;
+use Exception;
+
 class B8
 {
 
@@ -105,13 +108,7 @@ class B8
 		}
 		
 		# Setup the degenerator class
-		
-		$class = $this->_load_class('degenerator', $this->config['degenerator']);
-		
-		if($class === FALSE)
-			throw new Exception("b8: Could not load class definition file for degenerator \"{$this->config['degenerator']}\"");
-		
-		$this->degenerator = new $class($config_degenerator);
+		$this->degenerator = new b8_degenerator_default($config_degenerator);
 		
 		# Setup the lexer class
 		
@@ -137,38 +134,7 @@ class B8
 		$this->storage = new $class($config_storage, $this->degenerator);
 		
 	}
-	
-	/**
-	 * Load a class file if a class has not been defined yet.
-	 *
-	 * @access private
-	 * @return boolean Returns TRUE if everything is okay, otherwise FALSE.
-	 */
-	
-	private function _load_class($class_type, $class_name)
-	{
-	
-		$complete_class_name = "b8_{$class_type}_{$class_name}";
-		$class_file = dirname(__FILE__) . DIRECTORY_SEPARATOR . $class_type . DIRECTORY_SEPARATOR . "{$class_type}_{$class_name}.php";
-	
-		if(class_exists($complete_class_name, FALSE) === FALSE) {
-		
-			# Check if the requested file actually exists
-			if(is_file($class_file) !== TRUE or is_readable($class_file) !== TRUE)
-				return FALSE;
-			
-			# Include it
-			$included = require_once($class_file);
-			
-			if($included === FALSE or class_exists($complete_class_name, FALSE) === FALSE)
-				return FALSE;
-				
-		}
-		
-		return $complete_class_name;
-		
-	}
-	
+
 	/**
 	 * Classifies a text
 	 *

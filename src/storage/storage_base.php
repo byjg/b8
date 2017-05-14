@@ -1,5 +1,7 @@
 <?php
 
+namespace B8;
+
 #   Copyright (C) 2010-2012 Tobias Leupold <tobias.leupold@web.de>
 #
 #   This file is part of the b8 package
@@ -50,7 +52,7 @@ abstract class b8_storage_base
 		$internals = $this->get_internals();
 		
 		if(isset($internals['dbversion'])) {
-			if($internals['dbversion'] == b8::DBVERSION)
+			if($internals['dbversion'] == B8::DBVERSION)
 				return;
 		}
 		

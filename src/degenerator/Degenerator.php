@@ -1,5 +1,7 @@
 <?php
 
+namespace B8;
+
 #   Copyright (C) 2006-2012 Tobias Leupold <tobias.leupold@web.de>
 #
 #   This file is part of the b8 package
@@ -26,7 +28,7 @@
  * @author Tobias Leupold
  */
 
-class b8_degenerator_default
+class Degenerator
 {
 
 	public $config = array(

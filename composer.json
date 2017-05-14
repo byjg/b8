@@ -1,6 +1,6 @@
 {
   "name": "gregboggs/b8",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "type": "library",
   "description": "PHP spam filter",
   "keywords": ["spam", "filter"],

@@ -1,6 +1,6 @@
 {
   "name": "gregboggs/b8",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "type": "library",
   "description": "PHP spam filter",
   "keywords": ["spam", "filter"],
@@ -12,7 +12,7 @@
   },
   "autoload": {
     "psr-4": {
-      "b8\\": "src/"
+      "B8\\": "src/"
     }
   },
   "autoload-dev": {

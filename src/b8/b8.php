@@ -1,5 +1,7 @@
 <?php
 
+namespace B8\B8;
+
 #   Copyright (C) 2006-2013 Tobias Leupold <tobias.leupold@web.de>
 #
 #   b8 - A statistical ("Bayesian") spam filter written in PHP 5
@@ -27,7 +29,7 @@
  * @author Oliver Lillie (original PHP 5 port)
  */
 
-class b8
+class B8
 {
 
 	const DBVERSION = 3;

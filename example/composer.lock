@@ -9,11 +9,11 @@
     "packages": [
         {
             "name": "gregboggs/b8",
-            "version": "1.0.10",
+            "version": "1.0.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Greg-Boggs/b8.git",
-                "reference": "eca72ed17e986afce4c14df57ab00014c6a36e18"
+                "reference": "9f641670f20e377c7172e2b0887ce811e4a8e577"
             },
             "require": {
                 "php": ">=5.4.0"
@@ -21,7 +21,7 @@
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "b8\\": "src/"
+                    "B8\\": "src/"
                 }
             },
             "description": "PHP spam filter",
@@ -30,7 +30,7 @@
                 "filter",
                 "spam"
             ],
-            "time": "2017-05-14 22:12:30"
+            "time": "2017-05-14 22:15:34"
         }
     ],
     "packages-dev": [],

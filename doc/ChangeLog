@@ -1,3 +1,11 @@
+2019-02-08 Tobias Leupold <tobias.leupold@web.de>
+
+    * Release: Version 0.6.2
+
+    * b8.php: Removed the use of the (as of PHP 7.2) deprecated each() function. Thanks to Markus Hauser <mh@diebeiden.at> for the bug report along with a proposed patch!
+
+    * Overall code cleanup: Fixed coding style, indentation, function names, variable names ...
+
 2014-03-12 Tobias Leupold <tobias.leupold@web.de>
 
     * Release: Version 0.6.1

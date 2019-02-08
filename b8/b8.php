@@ -1,6 +1,6 @@
 <?php
 
-#   Copyright (C) 2006-2018 Tobias Leupold <tobias.leupold@web.de>
+#   Copyright (C) 2006-2019 Tobias Leupold <tobias.leupold@web.de>
 #
 #   b8 - A statistical ("Bayesian") spam filter written in PHP 5
 #
@@ -18,7 +18,7 @@
 #   Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 /**
- * Copyright (C) 2006-2018 Tobias Leupold <tobias.leupold@web.de>
+ * Copyright (C) 2006-2019 Tobias Leupold <tobias.leupold@web.de>
  *
  * @license LGPL 2.1
  * @access public

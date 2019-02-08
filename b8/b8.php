@@ -1,6 +1,6 @@
 <?php
 
-#   Copyright (C) 2006-2014 Tobias Leupold <tobias.leupold@web.de>
+#   Copyright (C) 2006-2018 Tobias Leupold <tobias.leupold@web.de>
 #
 #   b8 - A statistical ("Bayesian") spam filter written in PHP 5
 #
@@ -18,7 +18,7 @@
 #   Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 /**
- * Copyright (C) 2006-2014 Tobias Leupold <tobias.leupold@web.de>
+ * Copyright (C) 2006-2018 Tobias Leupold <tobias.leupold@web.de>
  *
  * @license LGPL 2.1
  * @access public
@@ -212,14 +212,14 @@ class b8
         # Get the most interesting tokens (use all if we have less than the given number)
         $relevant = array();
         for ($i = 0; $i < $this->config['use_relevant']; $i++) {
-            if ($tmp = each($importance)) {
+            if ($token = key($importance)) {
                 # Important tokens remain
 
                 # If the token's rating is relevant enough, use it
-                if (abs(0.5 - $rating[$tmp['key']]) > $this->config['min_dev']) {
+                if (abs(0.5 - $rating[$token]) > $this->config['min_dev']) {
                     # Tokens that appear more than once also count more than once
-                    for ($x = 0, $l = $word_count[$tmp['key']]; $x < $l; $x++) {
-                        array_push($relevant, $rating[$tmp['key']]);
+                    for ($x = 0, $l = $word_count[$token]; $x < $l; $x++) {
+                        array_push($relevant, $rating[$token]);
                     }
                 }
             } else {
@@ -227,6 +227,8 @@ class b8
                 # already use what we have and can break here
                 break;
             }
+
+            next($importance);
         }
 
         # Calculate the spamminess of the text (thanks to Mr. Robinson ;-)

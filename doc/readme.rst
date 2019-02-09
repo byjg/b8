@@ -5,7 +5,7 @@ b8: readme
 :Author: Tobias Leupold
 :Homepage: http://nasauber.de/
 :Contact: tobias.leupold@web.de
-:Date: |date|
+:Date: @LASTCHANGE@
 
 .. contents:: Table of Contents
 

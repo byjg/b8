@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# Fill in variables
+version=$(git describe --dirty)
+version=${version##*v}
+readme_date=$(git --no-pager log -1 --format=%ad --date=format:%d.%m.%Y -- "doc/readme.rst")
+
+# Create snapshot
+mkdir b8-$version
+git archive HEAD | tar -xC b8-$version
+
+# >>> Get in the released sources
+cd b8-$version
+
+# Update the readme's last changed date
+sed -i -e "s/@LASTCHANGE@/$readme_date/" doc/readme.rst
+
+# Compile the readme
+rst2html.py doc/readme.rst doc/readme.htm
+
+# Remove the release script
+rm make_release
+
+# <<< Get out of the released sources
+cd ..
+
+# Create the release tarball
+tar -cJf b8-$version.tar.xz b8-$version
+rm -r b8-$version

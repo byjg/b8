@@ -26,72 +26,35 @@
 
 # The database filename is interpreted relative to the b8.php script location.
 
-$config_b8 = array(
-	'storage' => 'dba'
-);
+require_once "../vendor/autoload.php";
 
-$config_storage = array(
-	'database' => 'wordlist.db',
-	'handler'  => 'db4'
-);
+use B8\B8;
+use B8\Factory;
 
-#*/
+$config_b8 = [];
 
-/*
-
-# Use this code block if you want to use MySQL.
-
-# An existing link resource can be passed to b8 by setting
-# $config_database['connection'] to this link resource.
-
-$config_b8 = array(
-	'storage' => 'mysql'
-);
-
-$config_storage = array(
-	'database'   => 'test',
-	'table_name' => 'b8_wordlist',
-	'host'       => 'localhost',
-	'user'       => '',
-	'pass'       => ''
-);
-
-*/
-
-/*
-
-# Use this code block if you want to use PostgreSQL.
-
-# An existing PDO instance can be passed to b8 by setting
-# $config_database['connection'] to this instance.
-
-$config_b8 = array(
-	'storage' => 'postgresql'
-);
-
-$config_storage = array(
-	'database'   => 'test',
-	'schema'     => 'b8',
-	'table_name' => 'b8_wordlist',
-	'host'       => 'localhost',
-	'port'       => '5432',
-	'user'       => '',
-	'pass'       => ''
-);
-
-*/
+$uri = new \ByJG\Util\Uri("sqlite:///tmp/teste.db");
 
 # Tell b8 to use the new-style HTML extractor
-$config_lexer = array(
-	'old_get_html' => FALSE,
-	'get_html'     => TRUE
+$lexer = Factory::getInstance(
+        Factory::Lexer,
+        "Standard",
+        (new \B8\Lexer\Config())
+            ->setOldGetHtml(false)
+            ->setGetHtml(true)
 );
 
 # Tell the degenerator to use multibyte operations
 # (needs PHP's mbstring module! If you don't have it, set 'multibyte' to FALSE)
-$config_degenerator = array(
-	'multibyte' => TRUE
+$degenerator = Factory::getInstance(
+        Factory::Degenerator,
+        "Standard",
+        (new \B8\Degenerator\Config())
+            ->setMultibyte(true)
 );
+
+
+
 
 ##### Here starts the script #####
 
@@ -99,8 +62,8 @@ $time_start = NULL;
 
 function microtimeFloat()
 {
-	list($usec, $sec) = explode(' ', microtime());
-	return((float) $usec + (float) $sec);
+    list($usec, $sec) = explode(' ', microtime());
+    return((float) $usec + (float) $sec);
 }
 
 # Output a nicely colored rating
@@ -108,13 +71,13 @@ function microtimeFloat()
 function formatRating($rating)
 {
 
-	if($rating === FALSE)
-		return '<span style="color:red">could not calculate spaminess</span>';
+    if($rating === FALSE)
+        return '<span style="color:red">could not calculate spaminess</span>';
 
-	$red   = floor(255 * $rating);
-	$green = floor(255 * (1 - $rating));
+    $red   = floor(255 * $rating);
+    $green = floor(255 * (1 - $rating));
 
-	return "<span style=\"color:rgb($red, $green, 0);\"><b>" . sprintf("%5f", $rating) . "</b></span>";
+    return "<span style=\"color:rgb($red, $green, 0);\"><b>" . sprintf("%5f", $rating) . "</b></span>";
 
 }
 
@@ -149,81 +112,78 @@ END;
 $postedText = '';
 
 if(isset($_POST['action']) and $_POST['text'] ==  '')
-	echo "<p style=\"color:red;\"><b>Please type in a text!</b></p>\n\n";
+    echo "<p style=\"color:red;\"><b>Please type in a text!</b></p>\n\n";
 
 elseif(isset($_POST['action']) and $_POST['text'] != '') {
 
-	$time_start = microtimeFloat();
+    $time_start = microtimeFloat();
 
-	# Include the b8 code
-	require dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'b8' . DIRECTORY_SEPARATOR . 'b8.php';
+    # Create a new b8 instance
+    
+    try {
+        $b8 = new B8($config_b8, $uri, $lexer, $degenerator);
+    }
+    catch(Exception $e) {
+        echo "<b>example:</b> Could not initialize b8.<br />\n";
+        echo "<b>Error message:</b> ", $e->getMessage();
+        echo "\n\n</div>\n\n</body>\n\n</html>";
+        exit();
+    }
 
-	# Create a new b8 instance
-	
-	try {
-		$b8 = new b8($config_b8, $config_storage, $config_lexer, $config_degenerator);
-	}
-	catch(Exception $e) {
-		echo "<b>example:</b> Could not initialize b8.<br />\n";
-		echo "<b>Error message:</b> ", $e->getMessage();
-		echo "\n\n</div>\n\n</body>\n\n</html>";
-		exit();
-	}
+    $text = stripslashes($_POST['text']);
+    $postedText = htmlentities($text, ENT_QUOTES, 'UTF-8');
 
-	$text = stripslashes($_POST['text']);
-	$postedText = htmlentities($text, ENT_QUOTES, 'UTF-8');
+    switch($_POST['action']) {
 
-	switch($_POST['action']) {
+        case 'Classify':
+            echo '<p><b>Spaminess: ' . formatRating($b8->classify($text)) . "</b></p>\n";
+            break;
 
-		case 'Classify':
-			echo '<p><b>Spaminess: ' . formatRating($b8->classify($text)) . "</b></p>\n";
-			break;
+        case 'Save as Spam':
 
-		case 'Save as Spam':
+            $ratingBefore = $b8->classify($text);
+            $b8->learn($text, b8::SPAM);
+            $ratingAfter = $b8->classify($text);
 
-			$ratingBefore = $b8->classify($text);
-			$b8->learn($text, b8::SPAM);
-			$ratingAfter = $b8->classify($text);
+            echo "<p>Saved the text as Spam</p>\n\n";
 
-			echo "<p>Saved the text as Spam</p>\n\n";
+            echo "<div><table>\n";
+            echo '<tr><td>Classification before learning:</td><td>' . formatRating($ratingBefore) . "</td></tr>\n";
+            echo '<tr><td>Classification after learning:</td><td>'  . formatRating($ratingAfter)  . "</td></tr>\n";
+            echo "</table></div>\n\n";
 
-			echo "<div><table>\n";
-			echo '<tr><td>Classification before learning:</td><td>' . formatRating($ratingBefore) . "</td></tr>\n";
-			echo '<tr><td>Classification after learning:</td><td>'  . formatRating($ratingAfter)  . "</td></tr>\n";
-			echo "</table></div>\n\n";
+            break;
 
-			break;
+        case 'Save as Ham':
 
-		case 'Save as Ham':
+            $ratingBefore = $b8->classify($text);
+            $b8->learn($text, b8::HAM);
+            $ratingAfter = $b8->classify($text);
 
-			$ratingBefore = $b8->classify($text);
-			$b8->learn($text, b8::HAM);
-			$ratingAfter = $b8->classify($text);
+            echo "<p>Saved the text as Ham</p>\n\n";
 
-			echo "<p>Saved the text as Ham</p>\n\n";
+            echo "<div><table>\n";
+            echo '<tr><td>Classification before learning:</td><td>' . formatRating($ratingBefore) . "</td></tr>\n";
+            echo '<tr><td>Classification after learning:</td><td>'  . formatRating($ratingAfter)  . "</td></tr>\n";
+            echo "</table></div>\n\n";
 
-			echo "<div><table>\n";
-			echo '<tr><td>Classification before learning:</td><td>' . formatRating($ratingBefore) . "</td></tr>\n";
-			echo '<tr><td>Classification after learning:</td><td>'  . formatRating($ratingAfter)  . "</td></tr>\n";
-			echo "</table></div>\n\n";
+            break;
 
-			break;
+        case 'Delete from Spam':
+            $b8->unlearn($text, b8::SPAM);
+            echo "<p style=\"color:green\">Deleted the text from Spam</p>\n\n";
+            break;
 
-		case 'Delete from Spam':
-			$b8->unlearn($text, b8::SPAM);
-			echo "<p style=\"color:green\">Deleted the text from Spam</p>\n\n";
-			break;
+        case 'Delete from Ham':
+            $b8->unlearn($text, b8::HAM);
+            echo "<p style=\"color:green\">Deleted the text from Ham</p>\n\n";
+            break;
 
-		case 'Delete from Ham':
-			$b8->unlearn($text, b8::HAM);
-			echo "<p style=\"color:green\">Deleted the text from Ham</p>\n\n";
-			break;
+    }
 
-	}
-
-	$mem_used      = round(memory_get_usage() / 1048576, 5);
-	$peak_mem_used = round(memory_get_peak_usage() / 1048576, 5);
-	$time_taken    = round(microtimeFloat() - $time_start, 5);
+    $mem_used      = round(memory_get_usage() / 1048576, 5);
+    $peak_mem_used = round(memory_get_peak_usage() / 1048576, 5);
+    $time_taken    = round(microtimeFloat() - $time_start, 5);
 
 }
 

@@ -17,6 +17,8 @@
 #   along with this program; if not, write to the Free Software Foundation,
 #   Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
+namespace B8\Degenerator;
+
 /**
  * Copyright (C) 2006-2014 Tobias Leupold <tobias.leupold@web.de>
  *
@@ -26,15 +28,15 @@
  * @author Tobias Leupold
  */
 
-class b8_degenerator_default
+class Standard implements DegeneratorInterface
 {
 
-    public $config = array(
-        'multibyte' => false,
-        'encoding'  => 'UTF-8'
-    );
+    /**
+     * @var Config
+     */
+    protected $config;
 
-    public $degenerates = array();
+    protected $degenerates = array();
 
     /**
      * Constructs the degenerator.
@@ -44,28 +46,19 @@ class b8_degenerator_default
      */
     function __construct($config)
     {
-        # Validate config data
-        foreach ($config as $name => $value) {
-            switch($name) {
-                case 'multibyte':
-                    $this->config[$name] = (bool) $value;
-                    break;
-                case 'encoding':
-                    $this->config[$name] = (string) $value;
-                    break;
-                default:
-                    throw new Exception(
-                        "b8_degenerator_default: Unknown configuration key: \"$name\""
-                    );
-            }
-        }
+        $this->config = $config;
+    }
+
+    public function getDegenerates($token)
+    {
+        return $this->degenerates[$token];
     }
 
     /**
      * Generates a list of "degenerated" words for a list of words.
      *
      * @access public
-     * @param array $tokens
+     * @param array $words
      * @return array An array containing an array of degenerated tokens for each token
      */
     public function degenerate(array $words)
@@ -115,18 +108,18 @@ class b8_degenerator_default
         }
 
         # Create different versions of upper and lower case
-        if ($this->config['multibyte'] === false) {
+        if ($this->config->isMultibyte() === false) {
             # The standard upper/lower versions
             $lower = strtolower($word);
             $upper = strtoupper($word);
             $first = substr($upper, 0, 1) . substr($lower, 1, strlen($word));
-        } elseif ($this->config['multibyte'] === true) {
+        } elseif ($this->config->isMultibyte() === true) {
             # The multibyte upper/lower versions
-            $lower = mb_strtolower($word, $this->config['encoding']);
-            $upper = mb_strtoupper($word, $this->config['encoding']);
+            $lower = mb_strtolower($word, $this->config->getEncoding());
+            $upper = mb_strtoupper($word, $this->config->getEncoding());
             $first = mb_substr(
-                $upper, 0, 1, $this->config['encoding']) .
-                mb_substr($lower, 1, mb_strlen($word), $this->config['encoding']
+                $upper, 0, 1, $this->config->getEncoding()) .
+                mb_substr($lower, 1, mb_strlen($word), $this->config->getEncoding()
             );
         }
 
@@ -173,7 +166,4 @@ class b8_degenerator_default
 
         return $degenerate;
     }
-
 }
-
-?>

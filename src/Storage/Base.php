@@ -27,27 +27,81 @@
  * @author Tobias Leupold
  */
 
-abstract class b8_storage_base
+namespace B8\Storage;
+
+use B8\B8;
+use B8\Degenerator\DegeneratorInterface;
+use B8\Word;
+use ByJG\AnyDataset\Db\Factory;
+use ByJG\MicroOrm\Exception\InvalidArgumentException;
+use ByJG\MicroOrm\Exception\OrmBeforeInvalidException;
+use ByJG\MicroOrm\Exception\OrmInvalidFieldsException;
+use ByJG\MicroOrm\Mapper;
+use ByJG\MicroOrm\Query;
+use ByJG\MicroOrm\Repository;
+use ByJG\Util\Uri;
+
+class Base
 {
 
     public $connected = false;
 
+    /**
+     * @var DegeneratorInterface
+     */
     protected $degenerator = null;
+
+    /**
+     * @var Mapper
+     */
+    protected $mapper;
+
+    /**
+     * @var Repository
+     */
+    protected $repository;
 
     const INTERNALS_TEXTS     = 'b8*texts';
     const INTERNALS_DBVERSION = 'b8*dbversion';
+
+    private $_deletes = array();
+    private $_puts    = array();
+    private $_updates = array();
+
+    /**
+     * Base constructor.
+     * @param Uri $uri
+     * @param DegeneratorInterface $degenerator
+     * @throws \ByJG\MicroOrm\Exception\OrmModelInvalidException
+     */
+    public function __construct($uri, $degenerator)
+    {
+        $this->mapper = new Mapper(
+            Word::class,
+            'b8_wordlist',
+            'token'
+        );
+
+        $dataset = Factory::getDbRelationalInstance($uri);
+
+        $this->repository = new Repository($dataset, $this->mapper);
+
+        $this->degenerator = $degenerator;
+    }
 
     /**
      * Checks if a b8 database is used and if it's version is okay.
      *
      * @access protected
      * @return void throws an exception if something's wrong with the database
+     * @throws InvalidArgumentException
+     * @throws \ByJG\Serializer\Exception\InvalidArgumentException
      */
     protected function checkDatabase()
     {
         $internals = $this->getInternals();
         if (isset($internals['dbversion'])) {
-            if ($internals['dbversion'] == b8::DBVERSION) {
+            if ($internals['dbversion'] == B8::DBVERSION) {
                 return;
             }
         }
@@ -62,6 +116,8 @@ abstract class b8_storage_base
      *
      * @access public
      * @return array Returns an array of all internals.
+     * @throws InvalidArgumentException
+     * @throws \ByJG\Serializer\Exception\InvalidArgumentException
      */
     public function getInternals()
     {
@@ -102,8 +158,10 @@ abstract class b8_storage_base
      * @access public
      * @param array $tokens
      * @return mixed Returns false on failure, otherwise returns array of returned data
-               in the format array('tokens' => array(token => count),
-               'degenerates' => array(token => array(degenerate => count))).
+     * in the format array('tokens' => array(token => count),
+     * 'degenerates' => array(token => array(degenerate => count))).
+     * @throws InvalidArgumentException
+     * @throws \ByJG\Serializer\Exception\InvalidArgumentException
      */
     public function get($tokens)
     {
@@ -145,7 +203,7 @@ abstract class b8_storage_base
             } else {
                 # The token was not found, so we look if we
                 # can return data for degenerated tokens
-                foreach ($this->degenerator->degenerates[$token] as $degenerate) {
+                foreach ($this->degenerator->getDegenerates($token) as $degenerate) {
                     if (isset($token_data[$degenerate]) === true) {
                         # A degeneration of the token way found in the database
                         $return_data_degenerates[$token][$degenerate] = $token_data[$degenerate];
@@ -170,6 +228,10 @@ abstract class b8_storage_base
      * @param const $category Either b8::HAM or b8::SPAM
      * @param const $action Either b8::LEARN or b8::UNLEARN
      * @return void
+     * @throws InvalidArgumentException
+     * @throws OrmBeforeInvalidException
+     * @throws OrmInvalidFieldsException
+     * @throws \ByJG\Serializer\Exception\InvalidArgumentException
      */
     public function processText($tokens, $category, $action)
     {
@@ -266,6 +328,89 @@ abstract class b8_storage_base
         $this->_commit();
     }
 
-}
+    /**
+     * @param array $tokens
+     * @return array
+     * @throws InvalidArgumentException
+     * @throws \ByJG\Serializer\Exception\InvalidArgumentException
+     */
+    protected function _getQuery($tokens)
+    {
+        $collection = $this->repository->filterIn($tokens);
 
-?>
+        $data = array();
+        foreach ($collection as $row) {
+            $data[$row->token] = array(
+                'count_ham' => $row->count_ham,
+                'count_spam' => $row->count_spam
+            );
+        }
+        return $data;
+    }
+
+    /**
+     * Store a token to the database.
+     *
+     * @access protected
+     * @param string $token
+     * @param array $count
+     * @return void
+     */
+    protected function _put($token, $count)
+    {
+        array_push($this->_puts, new Word($token, $count['count_ham'], $count['count_spam']));
+    }
+
+    /**
+     * Update an existing token.
+     *
+     * @access protected
+     * @param string $token
+     * @param array $count
+     * @return void
+     */
+    protected function _update($token, $count)
+    {
+        array_push($this->_updates, new Word($token, $count['count_ham'], $count['count_spam']));
+    }
+
+    /**
+     * Remove a token from the database.
+     *
+     * @access protected
+     * @param string $token
+     * @return void
+     */
+    protected function _del($token)
+    {
+        array_push($this->_deletes, $token);
+    }
+
+    /**
+     * Commits any modification queries.
+     *
+     * @access protected
+     * @return void
+     * @throws InvalidArgumentException
+     * @throws OrmBeforeInvalidException
+     * @throws OrmInvalidFieldsException
+     * @throws \ByJG\Serializer\Exception\InvalidArgumentException
+     */
+    protected function _commit()
+    {
+        foreach ($this->_deletes as $token) {
+            $this->repository->delete($token);
+        }
+        $this->_deletes = array();
+
+        foreach ($this->_puts as $word) {
+            $this->repository->save($word);
+        }
+        $this->_puts = array();
+
+        foreach ($this->_updates as $word) {
+            $this->repository->save($word);
+        }
+        $this->_updates = array();
+    }
+}

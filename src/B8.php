@@ -27,15 +27,24 @@
  * @author Oliver Lillie (original PHP 5 port)
  */
 
-class b8
+namespace B8;
+
+use B8\Degenerator\DegeneratorInterface;
+use B8\Lexer\LexerInterface;
+use ByJG\MicroOrm\Mapper;
+use ByJG\Util\Uri;
+
+class B8
 {
 
     const DBVERSION = 3;
 
+    /**
+     * @var Mapper
+     */
+    protected $mapper;
+
     public $config = array(
-        'lexer'        => 'default',
-        'degenerator'  => 'default',
-        'storage'      => 'dba',
         'use_relevant' => 15,
         'min_dev'      => 0.2,
         'rob_s'        => 0.3,
@@ -43,7 +52,15 @@ class b8
     );
 
     public $storage     = null;
+
+    /**
+     * @var LexerInterface
+     */
     public $lexer       = null;
+
+    /**
+     * @var DegeneratorInterface
+     */
     public $degenerator = null;
 
     private $_token_data = null;
@@ -63,13 +80,17 @@ class b8
      * Constructs b8
      *
      * @access public
-     * @return void
+     * @param array $config
+     * @param Uri $uri
+     * @param LexerInterface $lexer
+     * @param DegeneratorInterface $degenerator
+     * @throws \ByJG\MicroOrm\Exception\OrmModelInvalidException
      */
     function __construct(
-        $config             = array(),
-        $config_storage     = array(),
-        $config_lexer       = array(),
-        $config_degenerator = array()
+        $config,
+        $uri,
+        $lexer,
+        $degenerator
     )
     {
         # Validate config data
@@ -83,76 +104,19 @@ class b8
                 case 'use_relevant':
                     $this->config[$name] = (int) $value;
                     break;
-                case 'lexer':
-                case 'degenerator':
-                case 'storage':
-                    $this->config[$name] = (string) $value;
-                    break;
                 default:
                     throw new Exception("b8: Unknown configuration key: \"$name\"");
             }
         }
 
         # Setup the degenerator class
-        $class = $this->_loadClass('degenerator', $this->config['degenerator']);
-        if ($class === false) {
-            throw new Exception(
-                "b8: Could not load class definition file for degenerator " .
-                "\"{$this->config['degenerator']}\""
-            );
-        }
-        $this->degenerator = new $class($config_degenerator);
+        $this->degenerator = $degenerator;
 
         # Setup the lexer class
-        $class = $this->_loadClass('lexer', $this->config['lexer']);
-        if ($class === false) {
-            throw new Exception(
-                "b8: Could not load class definition file for lexer \"{$this->config['lexer']}\""
-            );
-        }
-        $this->lexer = new $class($config_lexer);
+        $this->lexer = $lexer;
 
         # Setup the storage backend
-        $class = $this->_loadClass('storage', 'base');
-        if ($class === false) {
-            throw new Exception("b8: Could not load class definition file for the storage base class");
-        }
-        $class = $this->_loadClass('storage', $this->config['storage']);
-        if ($class === false) {
-            throw new Exception(
-                "b8: Could not load class definition file for storage backend " .
-                "\"{$this->config['storage']}\""
-            );
-        }
-        $this->storage = new $class($config_storage, $this->degenerator);
-    }
-
-    /**
-     * Load a class file if a class has not been defined yet.
-     *
-     * @access private
-     * @return boolean Returns true if everything is okay, otherwise false.
-     */
-    private function _loadClass($class_type, $class_name)
-    {
-        $complete_class_name = "b8_{$class_type}_{$class_name}";
-        $class_file = dirname(__FILE__) . DIRECTORY_SEPARATOR . $class_type . DIRECTORY_SEPARATOR . "{$class_type}_{$class_name}.php";
-
-        if (class_exists($complete_class_name, false) === false) {
-            # Check if the requested file actually exists
-            if (is_file($class_file) !== true or is_readable($class_file) !== true) {
-                return false;
-            }
-
-            # Include it
-            $included = require_once($class_file);
-
-            if ($included === false or class_exists($complete_class_name, false) === false) {
-                return false;
-            }
-        }
-
-        return $complete_class_name;
+        $this->storage = new \B8\Storage\Base($uri, $this->degenerator);
     }
 
     /**
@@ -161,6 +125,8 @@ class b8
      * @access public
      * @param string $text
      * @return mixed float The rating between 0 (ham) and 1 (spam) or an error code
+     * @throws \ByJG\MicroOrm\Exception\InvalidArgumentException
+     * @throws \ByJG\Serializer\Exception\InvalidArgumentException
      */
     public function classify($text = null)
     {
@@ -274,7 +240,7 @@ class b8
      * @param string $word
      * @param string $texts_ham
      * @param string $texts_spam
-     * @return void
+     * @return float
      */
     private function _getProbability($word, $texts_ham, $texts_spam)
     {
@@ -321,7 +287,7 @@ class b8
      * @param array $data
      * @param string $texts_ham
      * @param string $texts_spam
-     * @return void
+     * @return float
      */
     private function _calcProbability($data, $texts_ham, $texts_spam)
     {
@@ -356,7 +322,7 @@ class b8
      *
      * @access private
      * @param string $category
-     * @return void
+     * @return string
      */
     private function _checkCategory($category)
     {
@@ -413,6 +379,10 @@ class b8
      * @param const $category Either b8::SPAM or b8::HAM
      * @param const $action Either b8::LEARN or b8::UNLEARN
      * @return mixed void or an error code
+     * @throws \ByJG\MicroOrm\Exception\InvalidArgumentException
+     * @throws \ByJG\MicroOrm\Exception\OrmBeforeInvalidException
+     * @throws \ByJG\MicroOrm\Exception\OrmInvalidFieldsException
+     * @throws \ByJG\Serializer\Exception\InvalidArgumentException
      */
     private function _processText($text, $category, $action)
     {
@@ -435,5 +405,3 @@ class b8
     }
 
 }
-
-?>

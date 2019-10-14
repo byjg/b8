@@ -17,6 +17,8 @@
 #   along with this program; if not, write to the Free Software Foundation,
 #   Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
+namespace B8\Lexer;
+
 /**
  * Copyright (C) 2006-2014 Tobias Leupold <tobias.leupold@web.de>
  *
@@ -27,27 +29,22 @@
  * @author Oliver Lillie (aka buggedcom) (original PHP 5 port)
  */
 
-class b8_lexer_default
+class Standard implements LexerInterface
 {
 
     const LEXER_TEXT_NOT_STRING = 'LEXER_TEXT_NOT_STRING';
     const LEXER_TEXT_EMPTY      = 'LEXER_TEXT_EMPTY';
 
-    public $config = array(
-        'min_size'      => 3,
-        'max_size'      => 30,
-        'allow_numbers' => false,
-        'get_uris'      => true,
-        'old_get_html'  => true,
-        'get_html'      => false,
-        'get_bbcode'    => false
-    );
+    /**
+     * @var Config
+     */
+    private $config;
 
     private $_tokens         = null;
     private $_processed_text = null;
 
     # The regular expressions we use to split the text to tokens
-    public $regexp = array(
+    protected $regexp = array(
         'raw_split' => '/[\s,\.\/"\:;\|<>\-_\[\]{}\+=\)\(\*\&\^%]+/',
         'ip'        => '/([A-Za-z0-9\_\-\.]+)/',
         'uris'      => '/([A-Za-z0-9\_\-]*\.[A-Za-z0-9\_\-\.]+)/',
@@ -61,28 +58,11 @@ class b8_lexer_default
      * Constructs the lexer.
      *
      * @access public
-     * @return void
+     * @param Config $config
      */
     function __construct($config)
     {
-        # Validate config data
-        foreach ($config as $name=>$value) {
-            switch ($name) {
-                case 'min_size':
-                case 'max_size':
-                    $this->config[$name] = (int) $value;
-                    break;
-                case 'allow_numbers':
-                case 'get_uris':
-                case 'old_get_html':
-                case 'get_html':
-                case 'get_bbcode':
-                    $this->config[$name] = (bool) $value;
-                    break;
-                default:
-                    throw new Exception("b8_lexer_default: Unknown configuration key: \"$name\"");
-            }
-        }
+        $this->config = $config;
     }
 
     /**
@@ -111,22 +91,22 @@ class b8_lexer_default
         # Reset the token list
         $this->_tokens = array();
 
-        if ($this->config['get_uris'] === true) {
+        if ($this->config->isGetUris() === true) {
             # Get URIs
             $this->_getUris($this->_processed_text);
         }
 
-        if ($this->config['old_get_html'] === true) {
+        if ($this->config->isOldGetHtml() === true) {
             # Get HTML - the old way without removing the found tags
             $this->_oldGetHtml($this->_processed_text);
         }
 
-        if ($this->config['get_html'] === true) {
+        if ($this->config->isGetHtml() === true) {
             # Get HTML
             $this->_getMarkup($this->_processed_text, $this->regexp['html']);
         }
 
-        if ($this->config['get_bbcode'] === true) {
+        if ($this->config->isGetBbcode() === true) {
             # Get BBCode
             $this->_getMarkup($this->_processed_text, $this->regexp['bbcode']);
         }
@@ -159,12 +139,12 @@ class b8_lexer_default
 
         # Validate the size of the token
         $len = strlen($token);
-        if ($len < $this->config['min_size'] or $len > $this->config['max_size']) {
+        if ($len < $this->config->getMinSize() or $len > $this->config->getMaxSize()) {
             return false;
         }
 
         # We may want to exclude pure numbers
-        if ($this->config['allow_numbers'] === false) {
+        if ($this->config->isAllowNumbers() === false) {
             if (preg_match($this->regexp['numbers'], $token) > 0) {
                 return false;
             }
@@ -291,5 +271,3 @@ class b8_lexer_default
     }
 
 }
-
-?>

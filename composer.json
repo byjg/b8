@@ -1,0 +1,24 @@
+{
+  "name": "byjg/b8",
+  "type": "library",
+  "description": "PHP spam filter",
+  "keywords": ["spam", "filter"],
+  "homepage": "https://github.com/byjg/b8",
+  "require": {
+    "byjg/micro-orm": "4.0.1.x-dev",
+    "php": ">=5.6.0"
+  },
+  "minimum-stability": "dev",
+  "suggest": {
+    "ext-mbstring": "*"
+  },
+  "require-dev": {
+  },
+  "autoload": {
+    "psr-4": {
+      "B8\\": "src/"
+    }
+  },
+  "autoload-dev": {
+  }
+}

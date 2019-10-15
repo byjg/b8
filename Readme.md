@@ -109,6 +109,36 @@ you will have to change your code to something like this:
 
 When an error occurs while instantiating b8, the object will simply not be created.
 
+Update from b8 0.7.*
+--------------------
+
+```php
+<?php
+
+$uri = new \ByJG\Util\Uri("sqlite:///tmp/teste.db");
+
+# Tell b8 to use the new-style HTML extractor
+$lexer = \B8\Factory::getInstance(
+        \B8\Factory::Lexer,
+        "Standard",
+        (new \B8\Lexer\Config())
+            ->setOldGetHtml(false)
+            ->setGetHtml(true)
+);
+
+# Tell the degenerator to use multibyte operations
+# (needs PHP's mbstring module! If you don't have it, set 'multibyte' to FALSE)
+$degenerator = \B8\Factory::getInstance(
+        \B8\Factory::Degenerator,
+        "Standard",
+        (new \B8\Degenerator\Config())
+            ->setMultibyte(true)
+);
+
+$b8 = new \B8\B8($config_b8, $uri, $lexer, $degenerator);
+
+```
+
 Installation
 ============
 

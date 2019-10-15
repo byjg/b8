@@ -1,3 +1,17 @@
+2019-10-15 Joao Gilberto Magalhaes <github.com/byjg>
+
+    * Release: Version 0.7.0
+
+    * Full refactoring of to code to use a ORM as Storage and creating interfaces for Lexer and Degenerator.
+
+    * Library can now be imported using composer.
+
+    * Dropped support from PHP 5.5 or less.
+
+    * Added Namespace to the classes
+
+    * Dropped support to DB4
+
 2019-02-08 Tobias Leupold <tobias.leupold@web.de>
 
     * Release: Version 0.6.2

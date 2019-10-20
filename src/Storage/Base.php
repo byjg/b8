@@ -18,7 +18,7 @@
 #   Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 /**
- * Functions used by all storage backends
+ * Functions used by all storage backend
  * Copyright (C) 2010-2014 Tobias Leupold <tobias.leupold@web.de>
  *
  * @license LGPL 2.1
@@ -45,14 +45,12 @@ abstract class Base implements StorageInterface
 
     const INTERNALS_TEXTS     = 'b8*texts';
     const INTERNALS_DBVERSION = 'b8*dbversion';
-    
+
     /**
      * Checks if a b8 database is used and if it's version is okay.
      *
      * @access protected
      * @return void throws an exception if something's wrong with the database
-     * @throws InvalidArgumentException
-     * @throws \ByJG\Serializer\Exception\InvalidArgumentException
      */
     protected function checkDatabase()
     {
@@ -73,8 +71,6 @@ abstract class Base implements StorageInterface
      *
      * @access public
      * @return array Returns an array of all internals.
-     * @throws InvalidArgumentException
-     * @throws \ByJG\Serializer\Exception\InvalidArgumentException
      */
     public function getInternals()
     {
@@ -121,8 +117,6 @@ abstract class Base implements StorageInterface
      * @return mixed Returns false on failure, otherwise returns array of returned data
      * in the format array('tokens' => array(token => count),
      * 'degenerates' => array(token => array(degenerate => count))).
-     * @throws InvalidArgumentException
-     * @throws \ByJG\Serializer\Exception\InvalidArgumentException
      */
     public function getTokens($tokens)
     {
@@ -193,10 +187,6 @@ abstract class Base implements StorageInterface
      * @param const $category Either b8::HAM or b8::SPAM
      * @param const $action Either b8::LEARN or b8::UNLEARN
      * @return void
-     * @throws InvalidArgumentException
-     * @throws OrmBeforeInvalidException
-     * @throws OrmInvalidFieldsException
-     * @throws \ByJG\Serializer\Exception\InvalidArgumentException
      */
     public function processText($tokens, $category, $action)
     {

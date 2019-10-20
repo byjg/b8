@@ -29,15 +29,14 @@
 
 namespace B8\Storage;
 
-use B8\B8;
 use B8\Degenerator\DegeneratorInterface;
 use B8\Word;
 use ByJG\AnyDataset\Db\Factory;
 use ByJG\MicroOrm\Exception\InvalidArgumentException;
 use ByJG\MicroOrm\Exception\OrmBeforeInvalidException;
 use ByJG\MicroOrm\Exception\OrmInvalidFieldsException;
+use ByJG\MicroOrm\Exception\OrmModelInvalidException;
 use ByJG\MicroOrm\Mapper;
-use ByJG\MicroOrm\Query;
 use ByJG\MicroOrm\Repository;
 use ByJG\Util\Uri;
 
@@ -57,7 +56,7 @@ class Rdbms extends Base
      * Rdbms constructor.
      * @param Uri $uri
      * @param DegeneratorInterface $degenerator
-     * @throws \ByJG\MicroOrm\Exception\OrmModelInvalidException
+     * @throws OrmModelInvalidException
      */
     public function __construct($uri, $degenerator)
     {
@@ -142,7 +141,7 @@ class Rdbms extends Base
      * Remove a token from the database.
      *
      * @access protected
-     * @param string $token
+     * @param array $token
      * @return void
      * @throws InvalidArgumentException
      */

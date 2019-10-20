@@ -33,7 +33,6 @@ use B8\Degenerator\DegeneratorInterface;
 use B8\Lexer\LexerInterface;
 use B8\Storage\StorageInterface;
 use ByJG\MicroOrm\Mapper;
-use ByJG\Util\Uri;
 
 class B8
 {
@@ -120,8 +119,6 @@ class B8
      * @access public
      * @param string $text
      * @return mixed float The rating between 0 (ham) and 1 (spam) or an error code
-     * @throws \ByJG\MicroOrm\Exception\InvalidArgumentException
-     * @throws \ByJG\Serializer\Exception\InvalidArgumentException
      */
     public function classify($text = null)
     {
@@ -371,13 +368,9 @@ class B8
      *
      * @access private
      * @param string $text
-     * @param const $category Either b8::SPAM or b8::HAM
-     * @param const $action Either b8::LEARN or b8::UNLEARN
+     * @param $category Either b8::SPAM or b8::HAM
+     * @param $action Either b8::LEARN or b8::UNLEARN
      * @return mixed void or an error code
-     * @throws \ByJG\MicroOrm\Exception\InvalidArgumentException
-     * @throws \ByJG\MicroOrm\Exception\OrmBeforeInvalidException
-     * @throws \ByJG\MicroOrm\Exception\OrmInvalidFieldsException
-     * @throws \ByJG\Serializer\Exception\InvalidArgumentException
      */
     private function _processText($text, $category, $action)
     {

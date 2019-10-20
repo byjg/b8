@@ -42,7 +42,7 @@ class Standard implements DegeneratorInterface
      * Constructs the degenerator.
      *
      * @access public
-     * @return void
+     * @param $config
      */
     function __construct($config)
     {
@@ -76,6 +76,7 @@ class Standard implements DegeneratorInterface
      * Remove duplicates from a list of degenerates of a word.
      *
      * @access private
+     * @param $word
      * @param array $list The list to process
      * @return array The list without duplicates
      */

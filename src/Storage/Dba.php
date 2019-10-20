@@ -29,17 +29,11 @@
 
 namespace B8\Storage;
 
-use B8\B8;
 use B8\Degenerator\DegeneratorInterface;
-use B8\Word;
-use ByJG\AnyDataset\Db\Factory;
 use ByJG\MicroOrm\Exception\InvalidArgumentException;
 use ByJG\MicroOrm\Exception\OrmBeforeInvalidException;
 use ByJG\MicroOrm\Exception\OrmInvalidFieldsException;
-use ByJG\MicroOrm\Mapper;
-use ByJG\MicroOrm\Query;
-use ByJG\MicroOrm\Repository;
-use ByJG\Util\Uri;
+use ByJG\MicroOrm\Exception\OrmModelInvalidException;
 
 class Dba extends Base
 {
@@ -51,7 +45,6 @@ class Dba extends Base
      * Dba constructor.
      * @param $path
      * @param DegeneratorInterface $degenerator
-     * @throws \ByJG\MicroOrm\Exception\OrmModelInvalidException
      */
     public function __construct($path, $degenerator)
     {
@@ -108,10 +101,6 @@ class Dba extends Base
      * @param string $token
      * @param array $count
      * @return void
-     * @throws InvalidArgumentException
-     * @throws OrmBeforeInvalidException
-     * @throws OrmInvalidFieldsException
-     * @throws \ByJG\Serializer\Exception\InvalidArgumentException
      */
     public function storagePut($token, $count)
     {
@@ -125,10 +114,6 @@ class Dba extends Base
      * @param string $token
      * @param array $count
      * @return void
-     * @throws InvalidArgumentException
-     * @throws OrmBeforeInvalidException
-     * @throws OrmInvalidFieldsException
-     * @throws \ByJG\Serializer\Exception\InvalidArgumentException
      */
     public function storageUpdate($token, $count)
     {
@@ -141,7 +126,6 @@ class Dba extends Base
      * @access protected
      * @param string $token
      * @return void
-     * @throws InvalidArgumentException
      */
     public function storageDel($token)
     {

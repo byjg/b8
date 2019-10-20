@@ -30,10 +30,7 @@
 namespace B8\Storage;
 
 use B8\Degenerator\DegeneratorInterface;
-use ByJG\MicroOrm\Exception\InvalidArgumentException;
-use ByJG\MicroOrm\Exception\OrmBeforeInvalidException;
-use ByJG\MicroOrm\Exception\OrmInvalidFieldsException;
-use ByJG\MicroOrm\Exception\OrmModelInvalidException;
+use B8\Word;
 
 class Dba extends Base
 {
@@ -65,13 +62,13 @@ class Dba extends Base
 
     /**
      * @param array $tokens
-     * @return array
+     * @return Word[]
      */
     public function storageRetrieve($tokens)
     {
         $data = [];
 
-        foreach ($tokens as $token) {
+        foreach ((array)$tokens as $token) {
             // Try to the raw data in the format "count_ham count_spam"
             $count = dba_fetch($token, $this->db);
 
@@ -84,10 +81,7 @@ class Dba extends Base
                 $count_spam = isset($split_data[1]) ? (int) $split_data[1] : null;
 
                 // Append the parsed data
-                $data[$token] = [
-                    "count_ham"  => $count_ham,
-                    "count_spam" => $count_spam
-                ];
+                $data[$token] = new Word($token, $count_ham, $count_spam);
             }
         }
 
@@ -98,26 +92,24 @@ class Dba extends Base
      * Store a token to the database.
      *
      * @access protected
-     * @param string $token
-     * @param array $count
+     * @param Word $word
      * @return void
      */
-    public function storagePut($token, $count)
+    public function storagePut($word)
     {
-        return dba_insert($token, $count["count_ham"] . " " . $count["count_spam"], $this->db);
+        return dba_insert($word->token, $word->count_ham . " " . $word->count_spam, $this->db);
     }
 
     /**
      * Update an existing token.
      *
      * @access protected
-     * @param string $token
-     * @param array $count
+     * @param Word $word
      * @return void
      */
-    public function storageUpdate($token, $count)
+    public function storageUpdate($word)
     {
-        return dba_replace($token, $count["count_ham"] . " " . $count["count_spam"], $this->db);
+        return dba_replace($word->token, $word->count_ham . " " . $word->count_spam, $this->db);
     }
 
     /**

@@ -33,6 +33,7 @@ use B8\Degenerator\DegeneratorInterface;
 use B8\Lexer\LexerInterface;
 use B8\Storage\StorageInterface;
 use ByJG\MicroOrm\Mapper;
+use Exception;
 
 class B8
 {
@@ -83,6 +84,7 @@ class B8
      * @param array $config
      * @param StorageInterface $storage
      * @param LexerInterface $lexer
+     * @throws Exception
      */
     function __construct(
         $config,
@@ -157,7 +159,7 @@ class B8
             # Although we only call this function only here ... let's do the
             # calculation stuff in a function to make this a bit less confusing ;-)
             $rating[$word] = $this->_getProbability(
-                $word, $internals['texts_ham'], $internals['texts_spam']
+                $word, $internals->count_ham, $internals->count_spam
             );
 
             $importance[$word] = abs(0.5 - $rating[$word]);
@@ -276,7 +278,7 @@ class B8
      * Do the actual spamminess calculation of a single token
      *
      * @access private
-     * @param array $data
+     * @param Word $data
      * @param string $texts_ham
      * @param string $texts_spam
      * @return float
@@ -290,21 +292,21 @@ class B8
         # spamminess because we count tokens appearing multiple times not just
         # once but as often as they appear in the learned texts.
 
-        $rel_ham = $data['count_ham'];
-        $rel_spam = $data['count_spam'];
+        $rel_ham = $data->count_ham;
+        $rel_spam = $data->count_spam;
 
         if ($texts_ham > 0) {
-            $rel_ham = $data['count_ham'] / $texts_ham;
+            $rel_ham = $data->count_ham / $texts_ham;
         }
 
         if ($texts_spam > 0) {
-            $rel_spam = $data['count_spam'] / $texts_spam;
+            $rel_spam = $data->count_spam / $texts_spam;
         }
 
         $rating = $rel_spam / ($rel_ham + $rel_spam);
 
         # Calculate the better probability proposed by Mr. Robinson
-        $all = $data['count_ham'] + $data['count_spam'];
+        $all = $data->count_ham + $data->count_spam;
         return (($this->config['rob_s'] * $this->config['rob_x']) + ($all * $rating)) /
                ($this->config['rob_s'] + $all);
     }
@@ -326,7 +328,7 @@ class B8
      *
      * @access public
      * @param string $text
-     * @param const $category Either b8::SPAM or b8::HAM
+     * @param string $category Either b8::SPAM or b8::HAM
      * @return mixed void or an error code
      */
     public function learn($text = null, $category = null)
@@ -347,7 +349,7 @@ class B8
      *
      * @access public
      * @param string $text
-     * @param const $category Either b8::SPAM or b8::HAM
+     * @param string $category Either b8::SPAM or b8::HAM
      * @return mixed void or an error code
      */
     public function unlearn($text = null, $category = null)
@@ -368,8 +370,8 @@ class B8
      *
      * @access private
      * @param string $text
-     * @param $category Either b8::SPAM or b8::HAM
-     * @param $action Either b8::LEARN or b8::UNLEARN
+     * @param string $category Either b8::SPAM or b8::HAM
+     * @param string $action Either b8::LEARN or b8::UNLEARN
      * @return mixed void or an error code
      */
     private function _processText($text, $category, $action)

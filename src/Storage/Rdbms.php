@@ -85,7 +85,7 @@ class Rdbms extends Base
 
     /**
      * @param array $tokens
-     * @return array
+     * @return Word[]
      * @throws InvalidArgumentException
      * @throws \ByJG\Serializer\Exception\InvalidArgumentException
      */
@@ -95,10 +95,7 @@ class Rdbms extends Base
 
         $data = array();
         foreach ($collection as $row) {
-            $data[$row->token] = array(
-                'count_ham' => $row->count_ham,
-                'count_spam' => $row->count_spam
-            );
+            $data[$row->token] = $row;
         }
         return $data;
     }
@@ -107,34 +104,32 @@ class Rdbms extends Base
      * Store a token to the database.
      *
      * @access protected
-     * @param string $token
-     * @param array $count
+     * @param Word $word
      * @return void
      * @throws InvalidArgumentException
      * @throws OrmBeforeInvalidException
      * @throws OrmInvalidFieldsException
      * @throws \ByJG\Serializer\Exception\InvalidArgumentException
      */
-    public function storagePut($token, $count)
+    public function storagePut($word)
     {
-        $this->repository->save(new Word($token, $count['count_ham'], $count['count_spam']));
+        $this->repository->save($word);
     }
 
     /**
      * Update an existing token.
      *
      * @access protected
-     * @param string $token
-     * @param array $count
+     * @param Word $word
      * @return void
      * @throws InvalidArgumentException
      * @throws OrmBeforeInvalidException
      * @throws OrmInvalidFieldsException
      * @throws \ByJG\Serializer\Exception\InvalidArgumentException
      */
-    public function storageUpdate($token, $count)
+    public function storageUpdate($word)
     {
-        $this->repository->save(new Word($token, $count['count_ham'], $count['count_spam']));
+        $this->repository->save($word);
     }
 
     /**

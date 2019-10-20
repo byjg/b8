@@ -31,9 +31,8 @@ namespace B8\Storage;
 
 use B8\B8;
 use B8\Degenerator\DegeneratorInterface;
-use ByJG\MicroOrm\Exception\InvalidArgumentException;
-use ByJG\MicroOrm\Exception\OrmBeforeInvalidException;
-use ByJG\MicroOrm\Exception\OrmInvalidFieldsException;
+use B8\Word;
+use Exception;
 
 abstract class Base implements StorageInterface
 {
@@ -49,16 +48,17 @@ abstract class Base implements StorageInterface
     /**
      * Checks if a b8 database is used and if it's version is okay.
      *
-     * @access protected
      * @return void throws an exception if something's wrong with the database
+     * @throws Exception
      */
-    protected function checkDatabase()
+    public function checkVersion()
     {
-        $internals = $this->getInternals();
-        if (isset($internals['dbversion'])) {
-            if ($internals['dbversion'] == B8::DBVERSION) {
-                return;
-            }
+        $this->storageOpen();
+        $internals = $this->storageRetrieve(self::INTERNALS_DBVERSION);
+        $this->storageClose();
+
+        if ($internals[B8::DBVERSION]->count_ham == B8::DBVERSION) {
+            return;
         }
 
         throw new Exception(
@@ -70,43 +70,15 @@ abstract class Base implements StorageInterface
      * Get the database's internal variables.
      *
      * @access public
-     * @return array Returns an array of all internals.
+     * @return Word Returns an array of all internals.
      */
     public function getInternals()
     {
         $this->storageOpen();
-
-        $internals = $this->storageRetrieve(
-            array(
-                self::INTERNALS_TEXTS,
-                self::INTERNALS_DBVERSION
-            )
-        );
-
+        $internals = $this->storageRetrieve(self::INTERNALS_TEXTS);
         $this->storageClose();
 
-        # Just in case this is called by checkDatabase() and
-        # it's not yet clear if we actually have a b8 database
-
-        $texts_ham = null;
-        $texts_spam = null;
-        $dbversion = null;
-
-        if(isset($internals[self::INTERNALS_TEXTS]['count_ham'])) {
-            $texts_ham = (int) $internals[self::INTERNALS_TEXTS]['count_ham'];
-        }
-        if(isset($internals[self::INTERNALS_TEXTS]['count_spam'])) {
-            $texts_spam = (int) $internals[self::INTERNALS_TEXTS]['count_spam'];
-        }
-        if(isset($internals[self::INTERNALS_DBVERSION]['count_ham'])) {
-            $dbversion = (int) $internals[self::INTERNALS_DBVERSION]['count_ham'];
-        }
-
-        return array(
-            'texts_ham'  => $texts_ham,
-            'texts_spam' => $texts_spam,
-            'dbversion'  => $dbversion
-        );
+        return $internals[self::INTERNALS_TEXTS];
     }
 
     /**
@@ -184,8 +156,8 @@ abstract class Base implements StorageInterface
      *
      * @access public
      * @param array $tokens
-     * @param const $category Either b8::HAM or b8::SPAM
-     * @param const $action Either b8::LEARN or b8::UNLEARN
+     * @param string $category Either b8::HAM or b8::SPAM
+     * @param string $action Either b8::LEARN or b8::UNLEARN
      * @return void
      */
     public function processText($tokens, $category, $action)
@@ -206,8 +178,8 @@ abstract class Base implements StorageInterface
                 # We already have this token, so update it's data
 
                 # Get the existing data
-                $count_ham  = $token_data[$token]['count_ham'];
-                $count_spam = $token_data[$token]['count_spam'];
+                $count_ham  = $token_data[$token]->count_ham;
+                $count_spam = $token_data[$token]->count_spam;
 
                 # Increase or decrease the right counter
                 if ($action === b8::LEARN) {
@@ -234,9 +206,7 @@ abstract class Base implements StorageInterface
 
                 # Now let's see if we have to update or delete the token
                 if ($count_ham != 0 or $count_spam != 0) {
-                    $this->storageUpdate(
-                        $token, array('count_ham' => $count_ham, 'count_spam' => $count_spam)
-                    );
+                    $this->storageUpdate(new Word($token, $count_ham, $count_spam));
                 } else {
                     $this->storageDel($token);
                 }
@@ -245,11 +215,10 @@ abstract class Base implements StorageInterface
                 # as we don't have it anyway, so just do something if we learn a text
                 if ($action === b8::LEARN) {
                     if ($category === b8::HAM) {
-                        $data = array('count_ham' => $count, 'count_spam' => 0);
+                        $this->storagePut(new Word($token, $count, 0));
                     } elseif ($category === b8::SPAM) {
-                        $data = array('count_ham' => 0, 'count_spam' => $count);
+                        $this->storagePut(new Word($token, 0, $count));
                     }
-                    $this->storagePut($token, $data);
                 }
             }
         }
@@ -257,29 +226,23 @@ abstract class Base implements StorageInterface
         # Now, all token have been processed, so let's update the right text
         if ($action === b8::LEARN) {
             if ($category === b8::HAM) {
-                $internals['texts_ham']++;
+                $internals->count_ham++;
             } elseif ($category === b8::SPAM) {
-                $internals['texts_spam']++;
+                $internals->count_spam++;
             }
         } elseif ($action == b8::UNLEARN) {
             if ($category === b8::HAM) {
-                if ($internals['texts_ham'] > 0) {
-                    $internals['texts_ham']--;
+                if ($internals->count_ham > 0) {
+                    $internals->count_ham--;
                 }
             } elseif ($category === b8::SPAM) {
-                if ($internals['texts_spam'] > 0) {
-                    $internals['texts_spam']--;
+                if ($internals->count_spam > 0) {
+                    $internals->count_spam--;
                 }
             }
         }
 
-        $this->storageUpdate(
-            self::INTERNALS_TEXTS,
-            array(
-                'count_ham' => $internals['texts_ham'],
-                'count_spam' => $internals['texts_spam']
-            )
-        );
+        $this->storageUpdate($internals);
 
         $this->storageClose();
     }

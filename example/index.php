@@ -30,10 +30,10 @@ require_once "../vendor/autoload.php";
 
 use B8\B8;
 use B8\Factory;
+use B8\Storage\Dba;
+use B8\Storage\Rdbms;
 
 $config_b8 = [];
-
-$uri = new \ByJG\Util\Uri("sqlite:///tmp/teste.db");
 
 # Tell b8 to use the new-style HTML extractor
 $lexer = Factory::getInstance(
@@ -53,6 +53,16 @@ $degenerator = Factory::getInstance(
             ->setMultibyte(true)
 );
 
+//$uri = new \ByJG\Util\Uri("sqlite:///tmp/teste.db");
+//$storage = new Rdbms(
+//    $uri,
+//    $degenerator
+//);
+
+$storage = new Dba(
+    __DIR__ . "/wordlist.db",
+    $degenerator
+);
 
 
 
@@ -121,7 +131,7 @@ elseif(isset($_POST['action']) and $_POST['text'] != '') {
     # Create a new b8 instance
     
     try {
-        $b8 = new B8($config_b8, $uri, $lexer, $degenerator);
+        $b8 = new B8($config_b8, $storage, $lexer);
     }
     catch(Exception $e) {
         echo "<b>example:</b> Could not initialize b8.<br />\n";

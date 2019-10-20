@@ -31,6 +31,7 @@ namespace B8;
 
 use B8\Degenerator\DegeneratorInterface;
 use B8\Lexer\LexerInterface;
+use B8\Storage\StorageInterface;
 use ByJG\MicroOrm\Mapper;
 use ByJG\Util\Uri;
 
@@ -81,16 +82,13 @@ class B8
      *
      * @access public
      * @param array $config
-     * @param Uri $uri
+     * @param StorageInterface $storage
      * @param LexerInterface $lexer
-     * @param DegeneratorInterface $degenerator
-     * @throws \ByJG\MicroOrm\Exception\OrmModelInvalidException
      */
     function __construct(
         $config,
-        $uri,
-        $lexer,
-        $degenerator
+        $storage,
+        $lexer
     )
     {
         # Validate config data
@@ -109,14 +107,11 @@ class B8
             }
         }
 
-        # Setup the degenerator class
-        $this->degenerator = $degenerator;
-
         # Setup the lexer class
         $this->lexer = $lexer;
 
         # Setup the storage backend
-        $this->storage = new \B8\Storage\Base($uri, $this->degenerator);
+        $this->storage = $storage;
     }
 
     /**
@@ -151,7 +146,7 @@ class B8
         }
 
         # Fetch all available data for the token set from the database
-        $this->_token_data = $this->storage->get(array_keys($tokens));
+        $this->_token_data = $this->storage->getTokens(array_keys($tokens));
 
         # Calculate the spamminess and importance for each token (or a degenerated form of it)
 

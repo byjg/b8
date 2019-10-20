@@ -31,64 +31,21 @@ namespace B8\Storage;
 
 use B8\B8;
 use B8\Degenerator\DegeneratorInterface;
-use B8\Word;
-use ByJG\AnyDataset\Db\Factory;
 use ByJG\MicroOrm\Exception\InvalidArgumentException;
 use ByJG\MicroOrm\Exception\OrmBeforeInvalidException;
 use ByJG\MicroOrm\Exception\OrmInvalidFieldsException;
-use ByJG\MicroOrm\Mapper;
-use ByJG\MicroOrm\Query;
-use ByJG\MicroOrm\Repository;
-use ByJG\Util\Uri;
 
-class Base
+abstract class Base implements StorageInterface
 {
-
-    public $connected = false;
 
     /**
      * @var DegeneratorInterface
      */
     protected $degenerator = null;
 
-    /**
-     * @var Mapper
-     */
-    protected $mapper;
-
-    /**
-     * @var Repository
-     */
-    protected $repository;
-
     const INTERNALS_TEXTS     = 'b8*texts';
     const INTERNALS_DBVERSION = 'b8*dbversion';
-
-    private $_deletes = array();
-    private $_puts    = array();
-    private $_updates = array();
-
-    /**
-     * Base constructor.
-     * @param Uri $uri
-     * @param DegeneratorInterface $degenerator
-     * @throws \ByJG\MicroOrm\Exception\OrmModelInvalidException
-     */
-    public function __construct($uri, $degenerator)
-    {
-        $this->mapper = new Mapper(
-            Word::class,
-            'b8_wordlist',
-            'token'
-        );
-
-        $dataset = Factory::getDbRelationalInstance($uri);
-
-        $this->repository = new Repository($dataset, $this->mapper);
-
-        $this->degenerator = $degenerator;
-    }
-
+    
     /**
      * Checks if a b8 database is used and if it's version is okay.
      *
@@ -121,12 +78,16 @@ class Base
      */
     public function getInternals()
     {
-        $internals = $this->_getQuery(
+        $this->storageOpen();
+
+        $internals = $this->storageRetrieve(
             array(
                 self::INTERNALS_TEXTS,
                 self::INTERNALS_DBVERSION
             )
         );
+
+        $this->storageClose();
 
         # Just in case this is called by checkDatabase() and
         # it's not yet clear if we actually have a b8 database
@@ -163,10 +124,12 @@ class Base
      * @throws InvalidArgumentException
      * @throws \ByJG\Serializer\Exception\InvalidArgumentException
      */
-    public function get($tokens)
+    public function getTokens($tokens)
     {
+        $this->storageOpen();
+
         # First we see what we have in the database.
-        $token_data = $this->_getQuery($tokens);
+        $token_data = $this->storageRetrieve($tokens);
 
         # Check if we have to degenerate some tokens
         $missing_tokens = array();
@@ -188,8 +151,10 @@ class Base
                 $degenerates_list = array_merge($degenerates_list, $token_degenerates);
             }
 
-            $token_data = array_merge($token_data, $this->_getQuery($degenerates_list));
+            $token_data = array_merge($token_data, $this->storageRetrieve($degenerates_list));
         }
+
+        $this->storageClose();
 
         # Here, we have all available data in $token_data.
 
@@ -240,8 +205,10 @@ class Base
         # First get the internals, including the ham texts and spam texts counter
         $internals = $this->getInternals();
 
+        $this->storageOpen();
+
         # Then, fetch all data for all tokens we have
-        $token_data = $this->_getQuery(array_keys($tokens));
+        $token_data = $this->storageRetrieve(array_keys($tokens));
 
         # Process all tokens to learn/unlearn
         foreach ($tokens as $token => $count) {
@@ -277,11 +244,11 @@ class Base
 
                 # Now let's see if we have to update or delete the token
                 if ($count_ham != 0 or $count_spam != 0) {
-                    $this->_update(
+                    $this->storageUpdate(
                         $token, array('count_ham' => $count_ham, 'count_spam' => $count_spam)
                     );
                 } else {
-                    $this->_del($token);
+                    $this->storageDel($token);
                 }
             } else {
                 # We don't have the token. If we unlearn a text, we can't delete it
@@ -292,7 +259,7 @@ class Base
                     } elseif ($category === b8::SPAM) {
                         $data = array('count_ham' => 0, 'count_spam' => $count);
                     }
-                    $this->_put($token, $data);
+                    $this->storagePut($token, $data);
                 }
             }
         }
@@ -316,7 +283,7 @@ class Base
             }
         }
 
-        $this->_update(
+        $this->storageUpdate(
             self::INTERNALS_TEXTS,
             array(
                 'count_ham' => $internals['texts_ham'],
@@ -324,93 +291,6 @@ class Base
             )
         );
 
-        # We're done and can commit all changes to the database now
-        $this->_commit();
-    }
-
-    /**
-     * @param array $tokens
-     * @return array
-     * @throws InvalidArgumentException
-     * @throws \ByJG\Serializer\Exception\InvalidArgumentException
-     */
-    protected function _getQuery($tokens)
-    {
-        $collection = $this->repository->filterIn($tokens);
-
-        $data = array();
-        foreach ($collection as $row) {
-            $data[$row->token] = array(
-                'count_ham' => $row->count_ham,
-                'count_spam' => $row->count_spam
-            );
-        }
-        return $data;
-    }
-
-    /**
-     * Store a token to the database.
-     *
-     * @access protected
-     * @param string $token
-     * @param array $count
-     * @return void
-     */
-    protected function _put($token, $count)
-    {
-        array_push($this->_puts, new Word($token, $count['count_ham'], $count['count_spam']));
-    }
-
-    /**
-     * Update an existing token.
-     *
-     * @access protected
-     * @param string $token
-     * @param array $count
-     * @return void
-     */
-    protected function _update($token, $count)
-    {
-        array_push($this->_updates, new Word($token, $count['count_ham'], $count['count_spam']));
-    }
-
-    /**
-     * Remove a token from the database.
-     *
-     * @access protected
-     * @param string $token
-     * @return void
-     */
-    protected function _del($token)
-    {
-        array_push($this->_deletes, $token);
-    }
-
-    /**
-     * Commits any modification queries.
-     *
-     * @access protected
-     * @return void
-     * @throws InvalidArgumentException
-     * @throws OrmBeforeInvalidException
-     * @throws OrmInvalidFieldsException
-     * @throws \ByJG\Serializer\Exception\InvalidArgumentException
-     */
-    protected function _commit()
-    {
-        foreach ($this->_deletes as $token) {
-            $this->repository->delete($token);
-        }
-        $this->_deletes = array();
-
-        foreach ($this->_puts as $word) {
-            $this->repository->save($word);
-        }
-        $this->_puts = array();
-
-        foreach ($this->_updates as $word) {
-            $this->repository->save($word);
-        }
-        $this->_updates = array();
+        $this->storageClose();
     }
 }

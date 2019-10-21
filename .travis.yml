@@ -10,5 +10,11 @@ php:
   - "7.0"
   - "5.6"
 
+install:
+  - echo "#!/bin/bash"         > test.sh
+  - echo "composer install"   >> test.sh
+  - echo "vendor/bin/phpunit" >> test.sh
+  - chmod a+x test.sh
+
 script:
-  - docker run -v $PWD:/work -w /work byjg/php:${TRAVIS_PHP_VERSION}-cli composer install && vendor/bin/phpunit
+  - docker run -v $PWD:/work -w /work byjg/php:${TRAVIS_PHP_VERSION}-cli ./test.sh

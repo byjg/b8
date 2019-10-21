@@ -14,6 +14,7 @@ install:
   - echo "#!/bin/sh"          > test.sh
   - echo "composer install"   >> test.sh
   - echo "vendor/bin/phpunit" >> test.sh
+  - chmod a+x test.sh
 
 script:
   - docker run -v ${PWD}:/work -w /work byjg/php:${TRAVIS_PHP_VERSION}-cli ./test.sh

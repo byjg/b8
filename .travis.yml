@@ -19,4 +19,4 @@ install:
   - echo $PWD
 
 script:
-  - docker run -v ${PWD}:/work -w /work byjg/php:${TRAVIS_PHP_VERSION}-cli /work/test.sh
+  - docker run -v ${PWD}:/work -w /work byjg/php:${TRAVIS_PHP_VERSION}-cli ls -la

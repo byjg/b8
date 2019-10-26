@@ -4,7 +4,7 @@
 namespace B8\Degenerator;
 
 
-class Config
+class ConfigDegenerator
 {
     protected $multibyte = false;
     protected $encoding = 'UTF-8';
@@ -19,7 +19,7 @@ class Config
 
     /**
      * @param bool $multibyte
-     * @return Config
+     * @return ConfigDegenerator
      */
     public function setMultibyte($multibyte)
     {
@@ -37,7 +37,7 @@ class Config
 
     /**
      * @param string $encoding
-     * @return Config
+     * @return ConfigDegenerator
      */
     public function setEncoding($encoding)
     {

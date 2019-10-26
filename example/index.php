@@ -29,27 +29,27 @@
 require_once "../vendor/autoload.php";
 
 use B8\B8;
-use B8\Factory;
+use B8\ConfigB8;
+use B8\Degenerator\ConfigDegenerator;
+use B8\Degenerator\StandardDegenerator;
+use B8\Lexer\ConfigLexer;
+use B8\Lexer\StandardLexer;
 use B8\Storage\Dba;
 use B8\Storage\Rdbms;
 
-$config_b8 = [];
+$config_b8 = new ConfigB8();
 
 # Tell b8 to use the new-style HTML extractor
-$lexer = Factory::getInstance(
-        Factory::Lexer,
-        "Standard",
-        (new \B8\Lexer\Config())
+$lexer = new StandardLexer(
+        (new ConfigLexer())
             ->setOldGetHtml(false)
             ->setGetHtml(true)
 );
 
 # Tell the degenerator to use multibyte operations
 # (needs PHP's mbstring module! If you don't have it, set 'multibyte' to FALSE)
-$degenerator = Factory::getInstance(
-        Factory::Degenerator,
-        "Standard",
-        (new \B8\Degenerator\Config())
+$degenerator = new StandardDegenerator(
+        (new ConfigDegenerator())
             ->setMultibyte(true)
 );
 

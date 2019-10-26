@@ -54,88 +54,50 @@ The other thing is that most statistical spam filters count one token one time, 
 
 This means that b8 might be good for classifying weblog comments, guestbook entries or forum posts (I really think it is ;-) – but very likely, it will work quite poor when being used for something else like classifying emails. At least with the default lexer. But as said above, for this task, there are lots of very good filters out there to choose from.
 
-Update from prior versions
-==========================
-
-If this is a new b8 installation, read on at the `Installation`_ section!
-
-Update from bayes-php version 0.2.1 or earlier
-----------------------------------------------
-
-Please first follow the database update instructions of the bayes-php-0.3 release if you update from a version prior to bayes-php-0.3, then read the following two paragraphs.
-
-Update from bayes-php version 0.3 to any pre-0.5 version of b8
---------------------------------------------------------------
-
-Version 0.5 introduced some changes. Here they are. Please read `Update from b8 0.5.*`_ for how to update your database.
-
-If you use SQLite: Sorry, at the moment, there's no SQLite backend for b8. You can probably create a dump of your database and insert it into a MySQL table.
-
-b8's lexer has been partially re-written. It should now be able to handle all kind of non-latin-1 input, like Cyrillic, Chinese or Japanese texts. Caused by this fact, much more tokens will be recognized when classifying such texts. Therefore, you could get different results in b8's ratings, even if the same database is used and although the math is still the same.
-
-b8 0.5 introduced two constants that can be used in the ``learn()`` and ``unlearn()`` functions: ``b8::HAM`` and ``b8::SPAM``. The literal values "ham" and "spam" can still be used anyway.
-
-Update from b8 0.5.*
---------------------
-
-The lexer and the degenerator can now be configured via an additional config array. If you want to use the new lexer and/or degenerator config, read through the `Configuration`_ section.
-
-The database format has changed. There's an update script for DBA and MySQL databases which can be found in the directory ``update/``. Simply edit the configuration array inside the respective script and run it. A new database with the current structure (v3) will be created. When the update was okay, simply replace your current database with the new one or change your configuration in a way that the new database will be used by b8.
-
-The ``validate()`` functions have been removed in favor of throwing exceptions when something goes wrong instantiating b8. So if you set up b8 like this
-
-::
-
-    $b8 = new b8($config_b8, $config_storage);
-
-    $started_up = $b8->validate();
-
-    if($started_up !== true) {
-        echo "Error: ", $started_up;
-        do_something();
-    }
-
-you will have to change your code to something like this:
-
-::
-
-    try {
-        $b8 = new b8($config_b8, $config_storage, $config_lexer, $config_degenerator);
-    }
-    catch(Exception $e) {
-        echo "Error: ", $e->getMessage();
-        do_something();
-    }
-
-When an error occurs while instantiating b8, the object will simply not be created.
-
-Update from b8 0.7.*
---------------------
 
 ```php
 <?php
 
-$uri = new \ByJG\Util\Uri("sqlite:///tmp/teste.db");
+use B8\B8;
+use B8\ConfigB8;
+use B8\Degenerator\ConfigDegenerator;
+use B8\Degenerator\StandardDegenerator;
+use B8\Lexer\ConfigLexer;
+use B8\Lexer\StandardLexer;
+use B8\Storage\Dba;
+use B8\Storage\Rdbms;
+use ByJG\Util\Uri;
+
+$config_b8 = new ConfigB8();
 
 # Tell b8 to use the new-style HTML extractor
-$lexer = \B8\Factory::getInstance(
-        \B8\Factory::Lexer,
-        "Standard",
-        (new \B8\Lexer\Config())
+$lexer = new StandardLexer(
+        (new ConfigLexer())
             ->setOldGetHtml(false)
             ->setGetHtml(true)
 );
 
 # Tell the degenerator to use multibyte operations
 # (needs PHP's mbstring module! If you don't have it, set 'multibyte' to FALSE)
-$degenerator = \B8\Factory::getInstance(
-        \B8\Factory::Degenerator,
-        "Standard",
-        (new \B8\Degenerator\Config())
+$degenerator = new StandardDegenerator(
+        (new ConfigDegenerator())
             ->setMultibyte(true)
 );
 
-$b8 = new \B8\B8($config_b8, $uri, $lexer, $degenerator);
+# If you want to access a DB Relational
+$uri = new Uri("sqlite:///tmp/teste.db");
+$storage = new Rdbms(
+    $uri,
+    $degenerator
+);
+
+# If you want to acess a Berkeley DB
+$storage = new Dba(
+    __DIR__ . "/wordlist.db",
+    $degenerator
+);
+
+$b8 = new B8($config_b8, $storage, $lexer);
 
 ```
 
@@ -208,68 +170,6 @@ The "Statistical discussion about b8" [#b8statistic]_ shows why the default valu
         This is Gary Robinson's *s* constant. This is essentially the probability that the *rob_x* value is correct for a completely unknown token. It will also shift the probability of rarely seen tokens towards this value. The default is ``0.3`` (float) |br|
         See [#spamdetection]_ for a closer description of the *s* constant and read [#b8statistic]_ for specific information about this constant in b8's algorithms.
 
-Configuration of the storage backend
-------------------------------------
-
-All the following values can be set in the "config_storage" array (the second parameter) passed to b8. The name of the array doesn't matter (of course), it just has to be the second argument.
-
-Settings for the Berkeley DB (DBA) backend
-``````````````````````````````````````````
-**database**
-    The filename of the database file, relative to the location of ``b8.php``. Defaults to ``wordlist.db`` (string).
-
-**handler**
-    The DBA handler to use (cf. `the PHP documentation <http://php.net/manual/en/dba.requirements.php>`_ and `Setting up a new Berkeley DB`_). Defaults to ``db4`` (string).
-
-Settings for the MySQL backend
-``````````````````````````````
-
-This applies both for the legacy ``mysql`` backend and for the newer ``mysqli`` backend.
-
-**database**
-    The database containing b8's wordlist table. Defaults to ``b8_wordlist`` (string).
-
-**table_name**
-    The table containing b8's wordlist. Defaults to ``b8_wordlist`` (string).
-
-**host**
-    The host of the MySQL server. Defaults to ``localhost`` (string).
-
-**user**
-    The user name used to open the database connection. Defaults to ``false`` (boolean).
-
-**pass**
-    The password required to open the database connection. Defaults to ``false`` (boolean).
-
-**connection**
-    An existing MySQL link-resource (for the ``mysql`` backend) or a mysqli object (for the ``mysqli`` backend) that can be used by b8. If a connection is passed to b8, it will be used to communicate with the database instead of creating a new connection. Defaults to ``null`` (null).
-
-Settings for the PostgreSQL backend
-```````````````````````````````````
-
-**database**
-    The database containing b8's wordlist table. Defaults to ``b8_wordlist`` (string).
-
-**table_name**
-    The table containing b8's wordlist. Defaults to ``b8_wordlist`` (string).
-
-**host**
-    The host of the PostgreSQL server. Defaults to ``localhost`` (string).
-
-**port**
-    The port of the PostgreSQL server. Defaults to ``5432`` (integer).
-
-**schema**
-    The schema in the database to use. Defaults to ``b8`` (string).
-
-**user**
-    The user name used to open the database connection. Defaults to ``false`` (boolean).
-
-**pass**
-    The password required to open the database connection. Defaults to ``false`` (boolean).
-
-**connection**
-    An existing PDO instance that can be used by b8. If a connection is passed to b8, it will be used to communicate with the database instead of creating a new connection. Defaults to ``null`` (null).
 
 Configuration of the lexer
 --------------------------

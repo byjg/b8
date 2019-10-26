@@ -4,7 +4,7 @@
 namespace B8\Lexer;
 
 
-class Config
+class ConfigLexer
 {
     private $min_size = 3;
     private $max_size = 30;
@@ -24,7 +24,7 @@ class Config
 
     /**
      * @param int $min_size
-     * @return Config
+     * @return ConfigLexer
      */
     public function setMinSize($min_size)
     {
@@ -42,7 +42,7 @@ class Config
 
     /**
      * @param int $max_size
-     * @return Config
+     * @return ConfigLexer
      */
     public function setMaxSize($max_size)
     {
@@ -60,7 +60,7 @@ class Config
 
     /**
      * @param bool $allow_numbers
-     * @return Config
+     * @return ConfigLexer
      */
     public function setAllowNumbers($allow_numbers)
     {
@@ -78,7 +78,7 @@ class Config
 
     /**
      * @param bool $get_uris
-     * @return Config
+     * @return ConfigLexer
      */
     public function setGetUris($get_uris)
     {
@@ -96,7 +96,7 @@ class Config
 
     /**
      * @param bool $old_get_html
-     * @return Config
+     * @return ConfigLexer
      */
     public function setOldGetHtml($old_get_html)
     {
@@ -114,7 +114,7 @@ class Config
 
     /**
      * @param bool $get_html
-     * @return Config
+     * @return ConfigLexer
      */
     public function setGetHtml($get_html)
     {
@@ -132,7 +132,7 @@ class Config
 
     /**
      * @param bool $get_bbcode
-     * @return Config
+     * @return ConfigLexer
      */
     public function setGetBbcode($get_bbcode)
     {

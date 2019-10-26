@@ -29,14 +29,14 @@ namespace B8\Lexer;
  * @author Oliver Lillie (aka buggedcom) (original PHP 5 port)
  */
 
-class Standard implements LexerInterface
+class StandardLexer implements LexerInterface
 {
 
     const LEXER_TEXT_NOT_STRING = 'LEXER_TEXT_NOT_STRING';
     const LEXER_TEXT_EMPTY      = 'LEXER_TEXT_EMPTY';
 
     /**
-     * @var Config
+     * @var ConfigLexer
      */
     private $config;
 
@@ -58,7 +58,7 @@ class Standard implements LexerInterface
      * Constructs the lexer.
      *
      * @access public
-     * @param Config $config
+     * @param ConfigLexer $config
      */
     function __construct($config)
     {

@@ -45,19 +45,20 @@ class B8
      */
     protected $mapper;
 
-    public $config = array(
-        'use_relevant' => 15,
-        'min_dev'      => 0.2,
-        'rob_s'        => 0.3,
-        'rob_x'        => 0.5
-    );
+    /**
+     * @var ConfigB8
+     */
+    protected $config = null;
 
-    public $storage     = null;
+    /**
+     * @var StorageInterface
+     */
+    protected $storage     = null;
 
     /**
      * @var LexerInterface
      */
-    public $lexer       = null;
+    protected $lexer       = null;
 
     /**
      * @var DegeneratorInterface
@@ -81,37 +82,15 @@ class B8
      * Constructs b8
      *
      * @access public
-     * @param array $config
+     * @param ConfigB8 $config
      * @param StorageInterface $storage
      * @param LexerInterface $lexer
      * @throws Exception
      */
-    function __construct(
-        $config,
-        $storage,
-        $lexer
-    )
+    function __construct($config, $storage, $lexer)
     {
-        # Validate config data
-        foreach ($config as $name => $value) {
-            switch ($name) {
-                case 'min_dev':
-                case 'rob_s':
-                case 'rob_x':
-                    $this->config[$name] = (float) $value;
-                    break;
-                case 'use_relevant':
-                    $this->config[$name] = (int) $value;
-                    break;
-                default:
-                    throw new Exception("b8: Unknown configuration key: \"$name\"");
-            }
-        }
-
-        # Setup the lexer class
+        $this->config = $config;
         $this->lexer = $lexer;
-
-        # Setup the storage backend
         $this->storage = $storage;
     }
 
@@ -171,12 +150,12 @@ class B8
 
         # Get the most interesting tokens (use all if we have less than the given number)
         $relevant = array();
-        for ($i = 0; $i < $this->config['use_relevant']; $i++) {
+        for ($i = 0; $i < $this->config->getUseRelevant(); $i++) {
             if ($token = key($importance)) {
                 # Important tokens remain
 
                 # If the token's rating is relevant enough, use it
-                if (abs(0.5 - $rating[$token]) > $this->config['min_dev']) {
+                if (abs(0.5 - $rating[$token]) > $this->config->getMinDev()) {
                     # Tokens that appear more than once also count more than once
                     for ($x = 0, $l = $word_count[$token]; $x < $l; $x++) {
                         array_push($relevant, $rating[$token]);
@@ -270,7 +249,7 @@ class B8
             # The token is really unknown, so choose the default rating
             # for completely unknown tokens. This strips down to the
             # robX parameter so we can cheap out the freaky math ;-)
-            return $this->config['rob_x'];
+            return $this->config->getRobX();
         }
     }
 
@@ -307,8 +286,8 @@ class B8
 
         # Calculate the better probability proposed by Mr. Robinson
         $all = $data->count_ham + $data->count_spam;
-        return (($this->config['rob_s'] * $this->config['rob_x']) + ($all * $rating)) /
-               ($this->config['rob_s'] + $all);
+        return (($this->config->getRobS() * $this->config->getRobX()) + ($all * $rating)) /
+               ($this->config->getRobS() + $all);
     }
 
     /**

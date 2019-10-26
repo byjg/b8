@@ -28,11 +28,11 @@ namespace B8\Degenerator;
  * @author Tobias Leupold
  */
 
-class Standard implements DegeneratorInterface
+class StandardDegenerator implements DegeneratorInterface
 {
 
     /**
-     * @var Config
+     * @var ConfigDegenerator
      */
     protected $config;
 

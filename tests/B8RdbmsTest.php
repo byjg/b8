@@ -3,9 +3,14 @@
 namespace Test;
 
 use B8\B8;
-use B8\Degenerator\Config;
+use B8\ConfigB8;
+use B8\Degenerator\ConfigDegenerator;
+use B8\Degenerator\StandardDegenerator;
 use B8\Factory;
+use B8\Lexer\ConfigLexer;
+use B8\Lexer\StandardLexer;
 use B8\Storage\Rdbms;
+use ByJG\Util\Uri;
 
 require_once 'B8Test.php';
 
@@ -18,28 +23,24 @@ class B8RdbmsTest extends B8Test
         $this->tearDown();
         copy(__DIR__ . "/db/sqlite.db", $this->path);
 
-        $degenerator = Factory::getInstance(
-            Factory::Degenerator,
-            "Standard",
-            (new Config())
-                ->setMultibyte(true)
-        );
-
-        $lexer = Factory::getInstance(
-            Factory::Lexer,
-            "Standard",
-            (new \B8\Lexer\Config())
+        $lexer = new StandardLexer(
+            (new ConfigLexer())
                 ->setOldGetHtml(false)
                 ->setGetHtml(true)
         );
 
-        $uri = new \ByJG\Util\Uri("sqlite://" . $this->path);
+        $degenerator = new StandardDegenerator(
+            (new ConfigDegenerator())
+                ->setMultibyte(true)
+        );
+
+        $uri = new Uri("sqlite://" . $this->path);
         $storage = new Rdbms(
             $uri,
             $degenerator
         );
 
-        $this->b8 = new B8([], $storage, $lexer);
+        $this->b8 = new B8(new ConfigB8(), $storage, $lexer);
     }
 
 }

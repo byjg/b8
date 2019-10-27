@@ -55,52 +55,6 @@ The other thing is that most statistical spam filters count one token one time, 
 This means that b8 might be good for classifying weblog comments, guestbook entries or forum posts (I really think it is ;-) – but very likely, it will work quite poor when being used for something else like classifying emails. At least with the default lexer. But as said above, for this task, there are lots of very good filters out there to choose from.
 
 
-```php
-<?php
-
-use B8\B8;
-use B8\ConfigB8;
-use B8\Degenerator\ConfigDegenerator;
-use B8\Degenerator\StandardDegenerator;
-use B8\Lexer\ConfigLexer;
-use B8\Lexer\StandardLexer;
-use B8\Storage\Dba;
-use B8\Storage\Rdbms;
-use ByJG\Util\Uri;
-
-$config_b8 = new ConfigB8();
-
-# Tell b8 to use the new-style HTML extractor
-$lexer = new StandardLexer(
-        (new ConfigLexer())
-            ->setOldGetHtml(false)
-            ->setGetHtml(true)
-);
-
-# Tell the degenerator to use multibyte operations
-# (needs PHP's mbstring module! If you don't have it, set 'multibyte' to FALSE)
-$degenerator = new StandardDegenerator(
-        (new ConfigDegenerator())
-            ->setMultibyte(true)
-);
-
-# If you want to access a DB Relational
-$uri = new Uri("sqlite:///tmp/teste.db");
-$storage = new Rdbms(
-    $uri,
-    $degenerator
-);
-
-# If you want to acess a Berkeley DB
-$storage = new Dba(
-    __DIR__ . "/wordlist.db",
-    $degenerator
-);
-
-$b8 = new B8($config_b8, $storage, $lexer);
-
-```
-
 Installation
 ============
 
@@ -254,24 +208,51 @@ Using b8 in your scripts
 
 Just have a look at the example script ``example/index.php`` to see how you can include b8 in your scripts. Essentially, this strips down to:
 
-::
+```php
+<?php
 
-    # Include b8's code
-    require_once($path_to . 'b8.php');
+use B8\B8;
+use B8\ConfigB8;
+use B8\Degenerator\ConfigDegenerator;
+use B8\Degenerator\StandardDegenerator;
+use B8\Lexer\ConfigLexer;
+use B8\Lexer\StandardLexer;
+use B8\Storage\Dba;
+use B8\Storage\Rdbms;
+use ByJG\Util\Uri;
 
-    # Do some configuration
-    $config_b8          = array('some_key' => 'some_value', ...);
-    $config_storage     = array('some_key' => 'some_value', ...);
-    $config_lexer       = array('some_key' => 'some_value', ...);
-    $config_degenerator = array('some_key' => 'some_value', ...);
+$config_b8 = new ConfigB8();
 
-    # Create a new b8 instance
-    try {
-        $b8 = new b8($config_b8, $config_storage, $config_lexer, $config_degenerator);
-    }
-    catch(Exception $e) {
-        do_something();
-    }
+# Tell b8 to use the new-style HTML extractor
+$lexer = new StandardLexer(
+        (new ConfigLexer())
+            ->setOldGetHtml(false)
+            ->setGetHtml(true)
+);
+
+# Tell the degenerator to use multibyte operations
+# (needs PHP's mbstring module! If you don't have it, set 'multibyte' to FALSE)
+$degenerator = new StandardDegenerator(
+        (new ConfigDegenerator())
+            ->setMultibyte(true)
+);
+
+# If you want to access a DB Relational
+$uri = new Uri("sqlite:///tmp/teste.db");
+$storage = new Rdbms(
+    $uri,
+    $degenerator
+);
+
+# If you want to acess a Berkeley DB
+$storage = new Dba(
+    __DIR__ . "/wordlist.db",
+    $degenerator
+);
+
+$b8 = new B8($config_b8, $storage, $lexer);
+
+```
 
 b8 provides three functions in an object oriented way (called e. g. via ``$b8->classify($text)``):
 

@@ -7,7 +7,7 @@
   "minimum-stability": "dev",
   "prefer-stable": true,
   "require": {
-    "byjg/micro-orm": "4.1.0.x-dev",
+    "byjg/micro-orm": "4.1.*",
     "php": ">=5.6.0"
   },
   "suggest": {

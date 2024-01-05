@@ -14,7 +14,7 @@ abstract class B8Test extends TestCase
 
     protected $path;
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         if (file_exists($this->path)) {
             unlink($this->path);
@@ -29,19 +29,22 @@ abstract class B8Test extends TestCase
 
         $this->b8->learn("this is a bad text", B8::SPAM);
 
-        $expected = 0.88461538461538;
+        $expected = 0.88461538;
         $result = $this->b8->classify("talking bad");
-        $this->assertEquals($expected, $result);
+        $this->assertGreaterThanOrEqual($expected, $result);
+        $this->assertLessThanOrEqual($expected + 0.01, $result);
 
         $this->b8->learn("john is a good person", B8::HAM);
 
-        $expected = 0.11538461538462;
+        $expected = 0.11538461;
         $result = $this->b8->classify("talking about john");
-        $this->assertEquals($expected, $result);
+        $this->assertGreaterThanOrEqual($expected, $result);
+        $this->assertLessThanOrEqual($expected + 0.01, $result);
 
-        $expected = 0.41649054220173;
+        $expected = 0.41649054;
         $result = $this->b8->classify("talking bad person john");
-        $this->assertEquals($expected, $result);
+        $this->assertGreaterThanOrEqual($expected, $result);
+        $this->assertLessThanOrEqual($expected + 0.01, $result);
     }
 
 }

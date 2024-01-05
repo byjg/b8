@@ -17,7 +17,7 @@ require_once 'B8Test.php';
 
 class B8DbaTest extends B8Test
 {
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->path = "/tmp/wordlist.db";
         $this->tearDown();

@@ -17,7 +17,7 @@ require_once 'B8Test.php';
 
 class B8RdbmsTest extends B8Test
 {
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->path = "/tmp/sqlite.db";
         $this->tearDown();

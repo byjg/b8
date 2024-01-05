@@ -13,7 +13,7 @@ use PHPUnit\Framework\TestCase;
 
 class DbaTest extends BaseTest
 {
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->path = "/tmp/wordlist.db";
         $this->tearDown();

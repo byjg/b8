@@ -17,7 +17,7 @@ abstract class BaseTest extends TestCase
 
     protected $path;
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         if (file_exists($this->path)) {
             unlink($this->path);

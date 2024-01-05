@@ -12,7 +12,7 @@ use PHPUnit\Framework\TestCase;
 
 class RdbmsTest extends BaseTest
 {
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->path = "/tmp/sqlite.db";
         $this->tearDown();
